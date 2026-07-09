@@ -2,18 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/guard";
-import { fetchNewsDetail, mapAiLog } from "@/lib/admin/queries";
+import { fetchNewsDetail } from "@/lib/admin/queries";
 import { getPanelDb } from "@/lib/db/panel";
-import {
-  formatDateTime,
-  formatMs,
-  pickNumber,
-  pickString,
-} from "@/lib/formatters";
+import { formatDateTime, pickString } from "@/lib/formatters";
 import { getPublicSiteUrl } from "@/lib/supabase/env";
 import { EditNewsMetaForm } from "@/components/admin/EditNewsMetaForm";
 import { NewsActions } from "@/components/admin/NewsActions";
-import { Table, Td } from "@/components/tables/Table";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Card } from "@/components/ui/Card";
 import { NotConfigured, ServiceRoleMissing } from "@/components/ui/NotConfigured";
@@ -44,8 +38,7 @@ export default async function NewsDetailPage({
   const detail = await fetchNewsDetail(panel.db, id);
   if (!detail.news || !detail.item) notFound();
 
-  const { news, item, i18nRows, source, aiLogs, usageEvents, auditLogs, errors } =
-    detail;
+  const { news, item, i18nRows, source, usageEvents, auditLogs, errors } = detail;
 
   const i18n =
     i18nRows.find((r) => r.locale === "pt") ?? i18nRows[0] ?? null;
@@ -99,7 +92,10 @@ export default async function NewsDetailPage({
           <div className="space-y-3">
             <Field
               label="Bottom line"
-              value={i18n ? pickString(i18n, ["bottom_line"]) : null}
+              value={
+                (i18n ? pickString(i18n, ["bottom_line"]) : null) ??
+                pickString(news, ["bottom_line"])
+              }
             />
             <Field
               label="O que não afirmar (do_not_claim)"
@@ -109,9 +105,11 @@ export default async function NewsDetailPage({
               label="Justificativa do GRADE"
               value={pickString(news, ["evidence_grade_rationale"])}
             />
+            <Field label="Limitações" value={pickString(news, ["limitations"])} />
+            <Field label="Resultado principal" value={pickString(news, ["main_result"])} />
             <Field
-              label="Limitações"
-              value={pickString(news, ["limitations", "limitations_text"])}
+              label="Aplicação clínica"
+              value={pickString(news, ["clinical_application"])}
             />
           </div>
         </Card>
@@ -123,21 +121,23 @@ export default async function NewsDetailPage({
               <Field label="DOI" value={pickString(source, ["doi"])} />
               <Field label="PMID" value={pickString(source, ["pmid"])} />
               <Field
-                label="Periódico"
-                value={pickString(source, ["journal", "journal_name", "container_title"])}
+                label="Título original"
+                value={pickString(source, ["title_original"])}
               />
-              <Field
-                label="Ano"
-                value={
-                  pickNumber(source, ["year", "publication_year"])?.toString() ?? null
-                }
-              />
-              <Field
-                label="Autores"
-                value={pickString(source, ["authors", "author_list"])}
-              />
-              <Field label="URL" value={pickString(source, ["url"])} />
+              <Field label="URL" value={pickString(source, ["canonical_url"])} />
               <Field label="content_key" value={pickString(source, ["content_key"])} />
+              <Field
+                label="Referência"
+                value={pickString(news, ["reference_text"])}
+              />
+              <div className="col-span-2">
+                <p className="text-xs text-muted">
+                  Metadata (periódico/ano/autores, quando presentes)
+                </p>
+                <pre className="mt-1 overflow-x-auto font-mono text-[11px] text-muted">
+                  {JSON.stringify(source.metadata ?? {}, null, 2)}
+                </pre>
+              </div>
             </div>
           ) : (
             <p className="text-sm text-muted">Sem fonte vinculada.</p>
@@ -150,7 +150,7 @@ export default async function NewsDetailPage({
             locale={typeof i18n?.locale === "string" ? i18n.locale : "pt"}
             currentTitle={item.title === "(sem título)" ? "" : item.title}
             currentMetaDescription={
-              i18n ? (pickString(i18n, ["meta_description"]) ?? "") : ""
+              i18n ? (pickString(i18n, ["seo_description"]) ?? "") : ""
             }
           />
         </Card>
@@ -181,24 +181,11 @@ export default async function NewsDetailPage({
       </div>
 
       <Card title="AI Logs relacionados" subtitle="sem prompt bruto, sem chaves">
-        {aiLogs.length === 0 ? (
-          <p className="text-sm text-muted">Nenhum log de IA vinculado.</p>
-        ) : (
-          <Table head={["Data", "Feature", "Provider", "Modelo", "Status", "Latência"]}>
-            {aiLogs.map(mapAiLog).map((log, index) => (
-              <tr key={index}>
-                <Td className="whitespace-nowrap text-xs text-muted">
-                  {formatDateTime(log.createdAt)}
-                </Td>
-                <Td className="font-mono text-xs">{log.feature}</Td>
-                <Td className="font-mono text-xs">{log.provider}</Td>
-                <Td className="font-mono text-xs">{log.model}</Td>
-                <Td className="font-mono text-xs">{log.status}</Td>
-                <Td className="font-mono text-xs">{formatMs(log.latencyMs)}</Td>
-              </tr>
-            ))}
-          </Table>
-        )}
+        <p className="text-sm text-muted">
+          O schema atual de <code className="font-mono">ai_logs</code> não tem
+          vínculo por NEWS (só <code className="font-mono">user_id</code>) — veja
+          os logs gerais em /ai-logs.
+        </p>
       </Card>
 
       <Card title="Usage events relacionados">

@@ -2,7 +2,17 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/lib/admin/guard";
 import { fetchCronLogs } from "@/lib/admin/queries";
 import { getPanelDb } from "@/lib/db/panel";
-import { formatDateTime, pickNumber, pickString } from "@/lib/formatters";
+import { formatDateTime, pickString } from "@/lib/formatters";
+import type { GenericRow } from "@/types/database";
+
+function cronDuration(row: GenericRow): string {
+  const start = pickString(row, ["started_at"]);
+  const end = pickString(row, ["finished_at"]);
+  if (!start || !end) return "—";
+  const ms = new Date(end).getTime() - new Date(start).getTime();
+  if (Number.isNaN(ms) || ms < 0) return "—";
+  return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${ms}ms`;
+}
 import { Table, Td } from "@/components/tables/Table";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -43,54 +53,54 @@ export default async function CronPage() {
         <Card title="Última execução">
           <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
             <div>
-              <p className="text-xs text-muted">Data</p>
-              <p>{formatDateTime(pickString(last, ["created_at", "started_at"]))}</p>
+              <p className="text-xs text-muted">Job</p>
+              <p className="font-mono">{pickString(last, ["job"]) ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted">Início</p>
+              <p>{formatDateTime(pickString(last, ["started_at", "created_at"]))}</p>
             </div>
             <div>
               <p className="text-xs text-muted">Status</p>
               <p className="font-mono">{pickString(last, ["status"]) ?? "—"}</p>
             </div>
             <div>
-              <p className="text-xs text-muted">NEWS geradas</p>
-              <p className="tabular-nums">
-                {pickNumber(last, ["news_generated", "generated_count", "created_count"]) ?? "—"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted">Duplicados encontrados</p>
-              <p className="tabular-nums">
-                {pickNumber(last, ["duplicates_found", "duplicate_count"]) ?? "—"}
-              </p>
+              <p className="text-xs text-muted">Duração</p>
+              <p className="font-mono">{cronDuration(last)}</p>
             </div>
           </div>
         </Card>
       ) : null}
 
-      <Card title="Execuções (cron_logs)">
+      <Card
+        title="Execuções (cron_logs)"
+        subtitle="colunas reais: job, status, started_at, finished_at, detail (NEWS geradas/duplicados/erros vêm no detail)"
+      >
         {rows.length === 0 ? (
           <EmptyState message="Nenhuma execução registrada em cron_logs — o cron diário roda no SITE (quando ativo)." />
         ) : (
-          <Table head={["Data", "Status", "NEWS geradas", "Duplicados", "Erros", "Latência", "Detalhe"]}>
+          <Table head={["Job", "Início", "Fim", "Status", "Duração", "Detail"]}>
             {rows.map((row, index) => (
               <tr key={index}>
+                <Td className="font-mono text-xs">{pickString(row, ["job"]) ?? "—"}</Td>
                 <Td className="whitespace-nowrap font-mono text-xs text-muted">
-                  {formatDateTime(pickString(row, ["created_at", "started_at"]))}
+                  {formatDateTime(pickString(row, ["started_at", "created_at"]))}
                 </Td>
-                <Td className="font-mono text-xs">{pickString(row, ["status"]) ?? "—"}</Td>
-                <Td className="font-mono text-xs tabular-nums">
-                  {pickNumber(row, ["news_generated", "generated_count", "created_count"]) ?? "—"}
+                <Td className="whitespace-nowrap font-mono text-xs text-muted">
+                  {formatDateTime(pickString(row, ["finished_at"]))}
                 </Td>
-                <Td className="font-mono text-xs tabular-nums">
-                  {pickNumber(row, ["duplicates_found", "duplicate_count"]) ?? "—"}
+                <Td
+                  className={`font-mono text-xs ${
+                    /error|fail/i.test(pickString(row, ["status"]) ?? "")
+                      ? "text-danger"
+                      : ""
+                  }`}
+                >
+                  {pickString(row, ["status"]) ?? "—"}
                 </Td>
-                <Td className="font-mono text-xs text-danger">
-                  {pickString(row, ["error", "error_message", "errors"]) ?? "—"}
-                </Td>
-                <Td className="font-mono text-xs">
-                  {pickNumber(row, ["duration_ms", "latency_ms"]) ?? "—"}
-                </Td>
-                <Td className="max-w-72 truncate font-mono text-[11px] text-muted">
-                  {pickString(row, ["message", "detail", "summary"]) ?? "—"}
+                <Td className="font-mono text-xs">{cronDuration(row)}</Td>
+                <Td className="max-w-96 truncate font-mono text-[11px] text-muted">
+                  {row.detail ? JSON.stringify(row.detail) : "—"}
                 </Td>
               </tr>
             ))}

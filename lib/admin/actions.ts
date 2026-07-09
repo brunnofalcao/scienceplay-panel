@@ -132,7 +132,8 @@ export async function editNewsMeta(
 
   const patch: Record<string, unknown> = {};
   if (title) patch.title = title;
-  if (metaDescription !== undefined) patch.meta_description = metaDescription;
+  // Coluna real no schema: news_i18n.seo_description
+  if (metaDescription !== undefined) patch.seo_description = metaDescription;
 
   const { error: updateError } = await ctx.db
     .from("news_i18n")
@@ -148,7 +149,7 @@ export async function editNewsMeta(
     entityId: newsId,
     before: {
       title: before.title,
-      meta_description: (before as Record<string, unknown>).meta_description ?? null,
+      seo_description: (before as Record<string, unknown>).seo_description ?? null,
     },
     after: patch,
   });

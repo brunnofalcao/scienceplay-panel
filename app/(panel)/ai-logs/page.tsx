@@ -102,7 +102,6 @@ export default async function AiLogsPage({
             "Erro",
             "Fallback",
             "user_id",
-            "news_id",
           ]}
         >
           {items.map((log, index) => (
@@ -126,9 +125,6 @@ export default async function AiLogsPage({
               <Td className="text-xs">{log.fallback ? "sim" : "—"}</Td>
               <Td className="max-w-28 truncate font-mono text-[11px] text-muted">
                 {log.userId ?? "—"}
-              </Td>
-              <Td className="max-w-28 truncate font-mono text-[11px] text-muted">
-                {log.newsId ?? "—"}
               </Td>
             </tr>
           ))}

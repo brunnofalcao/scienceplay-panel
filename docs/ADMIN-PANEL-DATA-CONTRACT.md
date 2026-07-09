@@ -97,12 +97,46 @@ migration destrutiva**. Mantenha este arquivo alinhado com o contrato compartilh
 3. Rotas gated por sessão não podem ser pré-renderizadas estáticas —
    o layout do painel usa `dynamic = "force-dynamic"`.
 
-## Observação pendente (validar na conexão real)
+## Schema real — reconciliado em 2026-07-09 (projeto oficial confirmado)
 
-- Os tipos em `types/database.ts` são um espelho manual do contrato. Ao
-  conectar as credenciais reais, gerar os oficiais:
-  `npx supabase gen types typescript --project-id wetvjyfrmnfxargsynnn > types/database.ts`.
-- As queries leem colunas de forma tolerante (`select('*')` + mapeamento
-  defensivo) e degradam com aviso visível quando uma tabela/coluna não bate —
-  reconciliar nomes exatos (ex.: colunas de `ai_logs`/`cron_logs`) na primeira
-  conexão.
+`wetvjyfrmnfxargsynnn` foi confirmado como o Supabase oficial (nome
+`scienceplay-platform`, sa-east-1) com todas as tabelas do contrato —
+`legacy_posts` com exatamente 1.825 linhas. Tipos oficiais gerados em
+`types/database.gen.ts`; `types/database.ts` mantém as constantes do contrato
+(enums batem 100% com o banco).
+
+Colunas reais que diferem do que o painel assumia (já corrigidas no código):
+
+| Onde | Esperado antes | Real no banco |
+|---|---|---|
+| `users` | `name` | `first_name` + `last_name` |
+| `news_i18n` | `meta_description` | `seo_description` (há também `seo_title`) |
+| `sources` | `url`, `journal`, `year`, `authors` | `canonical_url`, `title_original`; periódico/ano/autores em `metadata` (jsonb) |
+| `ai_logs` | `news_id`, `fallback` | **não existem** — só `user_id`; failover detectado por `status`/`feature` |
+| `cron_logs` | `news_generated`, `duration_ms` | `job`, `status`, `started_at`, `finished_at`, `detail` (jsonb) |
+| `legacy_posts` | `image_url` | `thumb` (+ `original_url`, `redirect_to`) |
+| `news_reviews` | — | tem também `area` (text), `study_type`, `population`, `sample`, `method`, `main_result`, `clinical_application`, `reference_text`, `approved_by`, `bottom_line` |
+
+## Migration aplicada pelo ADMIN (não-destrutiva, aditiva)
+
+`admin_writes_audit_logs_policy` (2026-07-09):
+
+```sql
+create policy "admin writes audit" on public.admin_audit_logs
+  for insert with check (is_admin());
+```
+
+Motivo: o contrato §1 diz que o ADMIN escreve em `admin_audit_logs`, mas a RLS
+só tinha policy de SELECT — sem service role, nenhuma ação admin conseguia
+gravar auditoria. Validado por impersonação: admin insere (com `admin_id` e
+before/after corretos); usuário comum recebe RLS violation 42501.
+
+## Lacunas de RLS conhecidas (operar via sessão admin, sem service role)
+
+- `saved_news`: só `user_id = current_app_user()` — admin NÃO vê a biblioteca
+  de outros usuários. Contadores de "NEWS salvas" ficam limitados (o painel
+  avisa na tela). Corrige com service role ou policy adicional no SITE.
+- `professions` / `specialties`: só SELECT — criar/renomear via painel exige
+  service role (tags e categories têm `ALL is_admin()` e funcionam).
+- `news_reviews`: policy de UPDATE existe (moderação ok); INSERT não (o painel
+  não cria NEWS, então sem impacto).

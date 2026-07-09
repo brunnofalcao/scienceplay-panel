@@ -80,13 +80,13 @@ export function mapPanelUser(
   const planId = pickString(row, ["plan_id", "plan"]);
   const professionId = pickString(row, ["profession_id", "profession"]);
   const specialtyId = pickString(row, ["specialty_id", "specialty"]);
+  const fullName = [pickString(row, ["first_name"]), pickString(row, ["last_name"])]
+    .filter(Boolean)
+    .join(" ");
   return {
     id: String(row.id),
     email: pickString(row, ["email"]) ?? "—",
-    name:
-      pickString(row, ["name", "full_name", "display_name"]) ??
-      pickString(row, ["email"]) ??
-      "—",
+    name: fullName || (pickString(row, ["email"]) ?? "—"),
     role: pickString(row, ["role"]) ?? "user",
     plan: (planId && maps.plans.get(planId)) ?? planId ?? "—",
     profession:

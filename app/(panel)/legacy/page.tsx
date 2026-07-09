@@ -62,13 +62,14 @@ export default async function LegacyPage() {
           <Table head={["Título", "URL", "Indexable"]}>
             {data.recent.map((post) => {
               const slug = pickString(post, ["slug"]);
+              const url = pickString(post, ["original_url"]) ?? (slug ? `/post/${slug}` : null);
               return (
                 <tr key={String(post.id)} className="hover:bg-panel-2">
                   <Td className="max-w-96">
                     {truncate(pickString(post, ["title"]) ?? "(sem título)", 90)}
                   </Td>
                   <Td className="max-w-72 truncate font-mono text-xs text-muted">
-                    {slug ? `/post/${slug}` : "—"}
+                    {url ?? "—"}
                   </Td>
                   <Td>
                     <LegacyIndexableToggle

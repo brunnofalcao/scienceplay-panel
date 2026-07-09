@@ -32,12 +32,10 @@ export async function getAdminActionContext(): Promise<
         "Supabase não configurado. Conecte NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.",
     };
   }
-  if (!panel.serviceRole) {
-    return {
-      error:
-        "Service role ausente para ações administrativas. Configure SUPABASE_SERVICE_ROLE_KEY (server-only).",
-    };
-  }
 
+  // Sem service role, as ações rodam com a sessão do admin — a RLS do banco
+  // (is_admin()/is_editor_or_admin() + policy de INSERT em admin_audit_logs)
+  // ainda garante que só admin escreve. Tabelas sem policy de escrita admin
+  // (ex.: professions/specialties) falham com o erro real do Postgres.
   return { db: panel.db, serviceRole: panel.serviceRole, profile };
 }

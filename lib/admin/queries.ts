@@ -244,14 +244,22 @@ export async function getDashboardData(db: Db): Promise<DashboardData> {
     aiCost += pickNumber(row, ["cost_usd", "estimated_cost_usd", "cost"]) ?? 0;
   }
 
+  // Traduz profession_id → nome real da profissão
+  const professionRows = await safeSelect(db, "professions", "id, name", errors, undefined, 500);
+  const professionNameById = new Map(
+    professionRows.map((r) => [String(r.id), pickString(r, ["name"]) ?? String(r.id)]),
+  );
+
   const userEmailById = new Map<string, string>();
   const professionCounts: string[] = [];
   for (const row of usersRows) {
     const id = row.id != null ? String(row.id) : null;
-    const email = pickString(row, ["email", "name", "full_name"]);
+    const email = pickString(row, ["email", "first_name"]);
     if (id && email) userEmailById.set(id, email);
-    const profession = pickString(row, ["profession_id", "profession"]);
-    if (profession) professionCounts.push(profession);
+    const professionId = pickString(row, ["profession_id"]);
+    if (professionId) {
+      professionCounts.push(professionNameById.get(professionId) ?? professionId);
+    }
   }
 
   const topTags = countBy(tagRows, (row) => {
@@ -265,15 +273,19 @@ export async function getDashboardData(db: Db): Promise<DashboardData> {
   const newsAreaRows = await safeSelect(
     db,
     "news_reviews",
-    "origin_type, categories(name)",
+    "origin_type, area, categories(name)",
     [],
     undefined,
     5000,
   );
   const areaName = (row: GenericRow): string | null => {
     const cat = row.categories as GenericRow | GenericRow[] | null;
-    if (Array.isArray(cat)) return pickString(cat[0] ?? {}, ["name"]);
-    return cat ? pickString(cat, ["name"]) : null;
+    const fromCategory = Array.isArray(cat)
+      ? pickString(cat[0] ?? {}, ["name"])
+      : cat
+        ? pickString(cat, ["name"])
+        : null;
+    return fromCategory ?? pickString(row, ["area"]);
   };
   const areasProduced = countBy(
     newsAreaRows.filter((r) => r.origin_type !== "user_upload"),
@@ -549,7 +561,8 @@ export async function fetchNewsDetail(db: Db, id: string) {
 
   const [item] = await enrichNewsRows(db, [news], errors);
 
-  const [i18nRows, sourceRows, aiLogs, usageEvents, auditLogs] = await Promise.all([
+  // ai_logs não tem coluna news_id no schema real (só user_id) — sem vínculo direto.
+  const [i18nRows, sourceRows, usageEvents, auditLogs] = await Promise.all([
     safeSelect(
       db,
       "news_i18n",
@@ -572,14 +585,6 @@ export async function fetchNewsDetail(db: Db, id: string) {
           1,
         )
       : Promise.resolve([] as GenericRow[]),
-    safeSelect(
-      db,
-      "ai_logs",
-      "*",
-      errors,
-      (q) => (q as { eq: (c: string, v: string) => unknown }).eq("news_id", id),
-      50,
-    ),
     safeSelect(
       db,
       "usage_events",
@@ -610,7 +615,6 @@ export async function fetchNewsDetail(db: Db, id: string) {
     item,
     i18nRows,
     source: sourceRows[0] ?? null,
-    aiLogs,
     usageEvents,
     auditLogs,
     errors,
@@ -768,7 +772,6 @@ export interface AiLogItem {
   error: string | null;
   fallback: boolean;
   userId: string | null;
-  newsId: string | null;
 }
 
 export function mapAiLog(row: GenericRow): AiLogItem {
@@ -784,11 +787,12 @@ export function mapAiLog(row: GenericRow): AiLogItem {
     tokensOut: pickNumber(row, ["tokens_out", "output_tokens", "completion_tokens"]),
     costUsd: pickNumber(row, ["cost_usd", "estimated_cost_usd", "cost"]),
     error: pickString(row, ["error", "error_message"]),
+    // schema real não tem coluna fallback — detectado via status/feature
     fallback:
       pickBoolean(row, ["fallback", "is_fallback", "used_fallback"]) === true ||
-      /fallback|failover/i.test(status),
+      /fallback|failover/i.test(status) ||
+      /fallback|failover/i.test(pickString(row, ["feature"]) ?? ""),
     userId: row.user_id != null ? String(row.user_id) : null,
-    newsId: row.news_id != null ? String(row.news_id) : null,
   };
 }
 
@@ -879,12 +883,9 @@ export async function fetchLegacyData(db: Db) {
   const withAccent = sample.filter(
     (r) => hasAccent(pickString(r, ["title"])) || hasAccent(pickString(r, ["slug"])),
   ).length;
-  const withImage = sample.filter((r) =>
-    Boolean(pickString(r, ["image_url", "image", "cover_url", "thumbnail"])),
-  ).length;
-  const withoutBody = sample.filter(
-    (r) => !pickString(r, ["body", "content", "html"]),
-  ).length;
+  // Coluna real de imagem no schema: legacy_posts.thumb
+  const withImage = sample.filter((r) => Boolean(pickString(r, ["thumb"]))).length;
+  const withoutBody = sample.filter((r) => !pickString(r, ["body"])).length;
 
   return {
     total,

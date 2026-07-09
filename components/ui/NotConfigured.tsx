@@ -25,9 +25,10 @@ export function NotConfigured() {
 export function ServiceRoleMissing() {
   return (
     <p className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
-      Service role ausente para ações administrativas — leitura via sessão
-      (RLS). Configure SUPABASE_SERVICE_ROLE_KEY (server-only) para habilitar
-      as ações de moderação.
+      Service role ausente — operando via sessão admin (RLS). Moderação de
+      NEWS, duplicados, tags, categorias e legacy funcionam; saved_news de
+      outros usuários e escrita em professions/specialties exigem
+      SUPABASE_SERVICE_ROLE_KEY (server-only).
     </p>
   );
 }

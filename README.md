@@ -22,6 +22,19 @@ npm run build && npm run start  # validação REAL (auth/sessão só valem em ne
 O painel **builda e roda sem credenciais**: sem env, as telas mostram o estado
 honesto "Supabase não configurado" (nenhum dado é simulado).
 
+Supabase oficial confirmado: `wetvjyfrmnfxargsynnn` (scienceplay-platform,
+sa-east-1). Tipos gerados do banco real em `types/database.gen.ts`.
+
+## Smoke test E2E (rodar onde *.supabase.co é alcançável)
+
+```bash
+npm run build && npm run start &
+PANEL_ADMIN_EMAIL=... PANEL_ADMIN_PASSWORD=... node scripts/e2e-smoke.mjs
+```
+
+Valida anônimo→/login, user comum→/unauthorized, admin→dashboard, navegação
+pelas 10 telas sem queda de sessão e ausência de segredos no HTML.
+
 ## Segurança
 
 - Anônimo → `/login` · usuário sem role admin → `/unauthorized` · admin → painel.
