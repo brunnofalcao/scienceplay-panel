@@ -48,12 +48,6 @@ export default async function UserDetailPage({
         </div>
       </div>
       <QueryDegradation errors={detail.errors} />
-      {!panel.serviceRole ? (
-        <p className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
-          Sem service role, a RLS de saved_news só expõe a biblioteca do próprio
-          admin — o bloco Consumo pode aparecer vazio para outros usuários.
-        </p>
-      ) : null}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
         <StatCard label="Eventos" value={formatNumber(stats.eventsTotal)} />

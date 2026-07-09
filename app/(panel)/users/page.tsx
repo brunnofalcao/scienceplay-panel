@@ -85,12 +85,6 @@ export default async function UsersPage({
         </span>
       </h1>
       <QueryDegradation errors={errors} />
-      {!panel.serviceRole ? (
-        <p className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
-          Sem service role, a RLS de saved_news limita a coluna “NEWS salvas”
-          aos dados do próprio admin.
-        </p>
-      ) : null}
 
       <form method="get" className="flex flex-wrap items-end gap-2 text-sm">
         <input

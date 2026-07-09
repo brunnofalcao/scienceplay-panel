@@ -117,26 +117,34 @@ Colunas reais que diferem do que o painel assumia (já corrigidas no código):
 | `legacy_posts` | `image_url` | `thumb` (+ `original_url`, `redirect_to`) |
 | `news_reviews` | — | tem também `area` (text), `study_type`, `population`, `sample`, `method`, `main_result`, `clinical_application`, `reference_text`, `approved_by`, `bottom_line` |
 
-## Migration aplicada pelo ADMIN (não-destrutiva, aditiva)
+## Migrations aplicadas pelo ADMIN (não-destrutivas, aditivas)
 
-`admin_writes_audit_logs_policy` (2026-07-09):
+Aplicadas ao projeto oficial em 2026-07-09 e espelhadas em
+[`db/migrations/`](../db/migrations/) deste repo — **copiar para
+`scienceplay-platform/db/migrations/`** (o SITE é o dono do schema):
 
-```sql
-create policy "admin writes audit" on public.admin_audit_logs
-  for insert with check (is_admin());
-```
+1. `admin_writes_audit_logs_policy` — INSERT em `admin_audit_logs` com
+   `is_admin()`. O contrato §1 diz que o ADMIN escreve auditoria, mas a RLS só
+   tinha SELECT; sem service role nenhuma ação conseguia auditar.
+2. `admin_reads_user_content` — SELECT com `is_admin()` em `saved_news`,
+   `collections`, `collection_items`. Destrava a visão estratégica por usuário
+   (biblioteca/consumo) via sessão admin.
+3. `admin_manages_profile_taxonomies` — ALL com `is_admin()` em `professions`
+   e `specialties` (contrato §1: "lê/gerencia").
 
-Motivo: o contrato §1 diz que o ADMIN escreve em `admin_audit_logs`, mas a RLS
-só tinha policy de SELECT — sem service role, nenhuma ação admin conseguia
-gravar auditoria. Validado por impersonação: admin insere (com `admin_id` e
-before/after corretos); usuário comum recebe RLS violation 42501.
+Validação por impersonação RLS no banco real:
+- admin grava auditoria com `admin_id`/before/after corretos; usuário comum →
+  RLS violation 42501;
+- admin lê `saved_news` de outros usuários; usuária comum continua vendo 0
+  registros de terceiros;
+- admin insere em `professions` (rollback).
 
-## Lacunas de RLS conhecidas (operar via sessão admin, sem service role)
+## RLS × service role (modelo de operação)
 
-- `saved_news`: só `user_id = current_app_user()` — admin NÃO vê a biblioteca
-  de outros usuários. Contadores de "NEWS salvas" ficam limitados (o painel
-  avisa na tela). Corrige com service role ou policy adicional no SITE.
-- `professions` / `specialties`: só SELECT — criar/renomear via painel exige
-  service role (tags e categories têm `ALL is_admin()` e funcionam).
-- `news_reviews`: policy de UPDATE existe (moderação ok); INSERT não (o painel
-  não cria NEWS, então sem impacto).
+- SITE: RLS de usuário comum, inalterada.
+- ADMIN: guard admin obrigatório + policies `is_admin()` acima. A
+  `SUPABASE_SERVICE_ROLE_KEY` (server-only) segue **recomendada** para
+  operação interna (consultas agregadas sem depender de sessão), mas deixou de
+  ser pré-requisito para leitura estratégica e auditoria.
+- `news_reviews`: policy de UPDATE existe (moderação ok); INSERT não — o
+  painel não cria NEWS, sem impacto.
