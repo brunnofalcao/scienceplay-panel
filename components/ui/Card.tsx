@@ -47,7 +47,8 @@ export function StatCard({
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
       <p className="text-xs text-muted">{label}</p>
-      <p className={`mt-1 text-2xl font-semibold tabular-nums ${toneClass}`}>
+      {/* Sora nos números de impacto (Brandbook §14) */}
+      <p className={`mt-1 font-display text-2xl font-bold tabular-nums ${toneClass}`}>
         {value}
       </p>
       {hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}

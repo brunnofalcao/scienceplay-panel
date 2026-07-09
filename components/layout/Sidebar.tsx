@@ -22,10 +22,10 @@ export function Sidebar() {
   return (
     <aside className="flex w-52 shrink-0 flex-col border-r border-line bg-panel">
       <div className="border-b border-line px-4 py-4">
-        <p className="text-xs uppercase tracking-widest text-accent">
+        <p className="font-display text-xs font-bold uppercase tracking-widest text-accent">
           Science Play
         </p>
-        <p className="text-sm font-semibold">Panel</p>
+        <p className="font-display text-sm font-semibold">Panel</p>
       </div>
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
         {NAV.map(({ href, label }) => {

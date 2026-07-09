@@ -1,5 +1,6 @@
 import { logout } from "@/lib/auth/actions";
 import { getPanelEnvName } from "@/lib/supabase/env";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import type { SessionProfile } from "@/types/admin";
 
 export function Header({ profile }: { profile: SessionProfile | null }) {
@@ -19,6 +20,7 @@ export function Header({ profile }: { profile: SessionProfile | null }) {
       </span>
 
       <div className="flex items-center gap-4">
+        <ThemeToggle />
         {profile ? (
           <>
             <div className="text-right">

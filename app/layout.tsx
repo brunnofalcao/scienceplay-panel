@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Inter, Sora } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Tipografia do Brandbook v2.1 §14: Sora (display) + Inter (UI/corpo)
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
 });
 
@@ -22,6 +28,9 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// Aplica o tema salvo ANTES da primeira pintura (evita flash claro/escuro).
+const themeInitScript = `try{if(localStorage.getItem("sp-panel-theme")==="light")document.documentElement.classList.add("light")}catch(e){}`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,8 +39,12 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+      className={`${inter.variable} ${sora.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   );

@@ -1,25 +1,72 @@
 @import "tailwindcss";
 
-@theme {
-  --color-bg: #0a0e15;
-  --color-panel: #0f1524;
-  --color-panel-2: #141c30;
-  --color-line: #1e293f;
-  --color-ink: #e6edf3;
-  --color-muted: #8b98ab;
-  --color-accent: #38bdf8;
-  --color-ok: #34d399;
-  --color-warn: #fbbf24;
-  --color-danger: #fb7185;
-  --font-sans: var(--font-geist-sans);
+/*
+ * Tokens do Brandbook Science Play v2.1 (§12–14):
+ * - Roxo Science (cor-mãe) #652E78 · nunca muda entre temas
+ * - Accent de sistema: Violeta elétrico #A855F7
+ * - Superfícies Dark S0–S4 · neutros claros para o tema de leitura
+ * - Regra 60/30/10: superfícies+neutros / roxo / accent
+ */
+@theme inline {
+  --color-bg: var(--sp-bg);
+  --color-panel: var(--sp-panel);
+  --color-panel-2: var(--sp-panel-2);
+  --color-line: var(--sp-line);
+  --color-ink: var(--sp-ink);
+  --color-muted: var(--sp-muted);
+  --color-accent: var(--sp-accent);
+  --color-brand: var(--sp-brand);
+  --color-brand-strong: var(--sp-brand-strong);
+  --color-ok: var(--sp-ok);
+  --color-warn: var(--sp-warn);
+  --color-danger: var(--sp-danger);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-sora);
   --font-mono: var(--font-geist-mono);
 }
 
+/* Tema padrão: Dark (superfícies S0–S4 do brandbook) */
+:root {
+  --sp-bg: #0e0a12; /* S0 */
+  --sp-panel: #15101a; /* S1 */
+  --sp-panel-2: #1c1622; /* S2 */
+  --sp-line: #2c2433; /* S4 */
+  --sp-ink: #efedf1;
+  --sp-muted: #928f96;
+  --sp-accent: #a855f7; /* violeta elétrico 500 */
+  --sp-brand: #652e78; /* roxo Science 600 — núcleo, fixo */
+  --sp-brand-strong: #532562; /* roxo 700 */
+  --sp-ok: #34d399;
+  --sp-warn: #fbbf24;
+  --sp-danger: #ef5350;
+}
+
+/* Tema claro ("Claro para leitura e B2B") — neutros claros do brandbook */
+html.light {
+  --sp-bg: #f7f6f8;
+  --sp-panel: #ffffff;
+  --sp-panel-2: #efedf1;
+  --sp-line: #dcdbdb;
+  --sp-ink: #1c1622;
+  --sp-muted: #6e6b72;
+  --sp-accent: #7e2bd4; /* violeta 700 — contraste no claro */
+  --sp-brand: #652e78;
+  --sp-brand-strong: #532562;
+  --sp-ok: #047857;
+  --sp-warn: #b45309;
+  --sp-danger: #d22429;
+}
+
 body {
-  background: var(--color-bg);
-  color: var(--color-ink);
+  background: var(--sp-bg);
+  color: var(--sp-ink);
+}
+
+/* Sora em títulos de página (H1) — "títulos hero, números de impacto" */
+h1 {
+  font-family: var(--font-sora), var(--font-inter), sans-serif;
 }
 
 ::selection {
-  background: rgba(56, 189, 248, 0.3);
+  background: rgba(168, 85, 247, 0.3);
 }

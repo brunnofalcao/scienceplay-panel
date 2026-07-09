@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSessionProfile } from "@/lib/auth/session";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 export const metadata: Metadata = { title: "Login" };
 
@@ -22,9 +23,12 @@ export default async function LoginPage() {
   return (
     <main className="flex flex-1 items-center justify-center p-6">
       <div className="w-full max-w-sm rounded-xl border border-line bg-panel p-8">
-        <p className="text-xs uppercase tracking-widest text-accent">
-          Science Play
-        </p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="font-display text-xs font-bold uppercase tracking-widest text-accent">
+            Science Play
+          </p>
+          <ThemeToggle />
+        </div>
         <h1 className="mt-1 text-xl font-semibold">Panel — acesso interno</h1>
         <p className="mt-2 text-sm text-muted">
           Uso restrito à equipe. Todas as ações são auditadas.
