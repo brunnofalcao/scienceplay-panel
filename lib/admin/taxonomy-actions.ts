@@ -4,17 +4,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminActionContext } from "@/lib/admin/action-context";
 import { writeAuditLog } from "@/lib/admin/audit";
+import { TAXONOMY_TABLES } from "@/lib/admin/taxonomy-tables";
 import { slugify } from "@/lib/formatters";
 import type { ActionResult } from "@/types/admin";
-
-/** Tabelas de taxonomia que o ADMIN gerencia (whitelist — nada fora dela). */
-export const TAXONOMY_TABLES = [
-  "professions",
-  "specialties",
-  "categories",
-  "tags",
-] as const;
-export type TaxonomyTable = (typeof TAXONOMY_TABLES)[number];
 
 const createSchema = z.object({
   table: z.enum(TAXONOMY_TABLES),

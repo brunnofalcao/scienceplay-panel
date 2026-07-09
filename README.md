@@ -35,6 +35,14 @@ PANEL_ADMIN_EMAIL=... PANEL_ADMIN_PASSWORD=... node scripts/e2e-smoke.mjs
 Valida anônimo→/login, user comum→/unauthorized, admin→dashboard, navegação
 pelas 10 telas sem queda de sessão e ausência de segredos no HTML.
 
+## E2E autenticado offline (Supabase falso)
+
+Sem rede/credenciais, dá para exercitar o caminho LOGADO inteiro (render das
+11 telas + server actions) com `scripts/mock-supabase.mjs` +
+`scripts/e2e-mock.mjs` — instruções no cabeçalho dos arquivos. Rodar após
+qualquer mudança em páginas ou actions (pega bugs que só aparecem em runtime
+autenticado, como exports inválidos em arquivos "use server").
+
 ## Segurança
 
 - Anônimo → `/login` · usuário sem role admin → `/unauthorized` · admin → painel.
