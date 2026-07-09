@@ -7,9 +7,10 @@ aplicadas** ao projeto oficial `wetvjyfrmnfxargsynnn` em 2026-07-09 via
 Supabase MCP (aparecem em `supabase_migrations.schema_migrations`).
 
 **Registro oficial no SITE: FEITO** — copiadas para
-`scienceplay-platform/db/migrations/` como `0012`, `0013` e `0014` no branch
-`claude/admin-rls-migrations` (mergear no `main` do SITE). Este diretório é
-apenas referência/documentação do painel.
+`scienceplay-platform/db/migrations/` como `0012`, `0013` e `0014`, em revisão
+no PR https://github.com/brunnofalcao/scienceplay-platform/pull/1 (idempotentes
+via `drop policy if exists` + `create policy`). Este diretório é apenas
+referência/documentação do painel.
 
 | Arquivo | O que faz |
 |---|---|
