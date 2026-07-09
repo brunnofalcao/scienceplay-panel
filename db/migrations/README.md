@@ -6,9 +6,10 @@ O dono oficial do schema é `scienceplay-platform` (SITE), com migrations em
 aplicadas** ao projeto oficial `wetvjyfrmnfxargsynnn` em 2026-07-09 via
 Supabase MCP (aparecem em `supabase_migrations.schema_migrations`).
 
-**Ação pendente no SITE:** copiar estes arquivos para
-`scienceplay-platform/db/migrations/` para que o histórico oficial do schema
-não dependa de migration registrada só no painel.
+**Registro oficial no SITE: FEITO** — copiadas para
+`scienceplay-platform/db/migrations/` como `0012`, `0013` e `0014` no branch
+`claude/admin-rls-migrations` (mergear no `main` do SITE). Este diretório é
+apenas referência/documentação do painel.
 
 | Arquivo | O que faz |
 |---|---|
