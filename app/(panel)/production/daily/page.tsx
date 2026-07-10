@@ -18,6 +18,16 @@ import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
 
 export const metadata: Metadata = { title: "Produção Diária" };
+// O disparo manual espera o motor do SITE terminar (até 300s por lá).
+export const maxDuration = 300;
+
+type DailyRunMeta = {
+  published?: number;
+  discovered?: number;
+  needsReview?: number;
+  deduped?: number;
+  errors?: number;
+};
 
 export default async function ProductionDailyPage() {
   const guard = await requireAdmin();
@@ -30,7 +40,8 @@ export default async function ProductionDailyPage() {
     fetchCostAnalytics(panel.db),
   ]);
   const ready = hasSiteInternalSecret();
-  const last = overview.lastCron;
+  const lastRun = overview.dailyRuns[0] ?? null;
+  const lastMeta = (lastRun?.meta ?? null) as DailyRunMeta | null;
 
   return (
     <>
@@ -41,33 +52,62 @@ export default async function ProductionDailyPage() {
       </p>
       <QueryDegradation errors={[...overview.errors, ...costs.errors_]} />
 
-      <Card title="Motor diário" subtitle="POST {SITE}/api/internal/daily-news">
+      <Card
+        title="Motor diário"
+        subtitle="GET {SITE}/api/cron/daily-news · agendado 06:30 BRT (Vercel cron) · publica até 6 NEWS/dia"
+      >
         <div className="mb-3 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
           <div>
             <p className="text-xs text-muted">Última execução</p>
             <p>
-              {last
-                ? formatDateTime(pickString(last, ["started_at", "created_at"]))
-                : "nenhuma registrada"}
+              {lastRun
+                ? formatDateTime(pickString(lastRun, ["created_at"]))
+                : "nenhuma registrada ainda"}
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted">Status</p>
-            <p className="font-mono">{last ? (pickString(last, ["status"]) ?? "—") : "—"}</p>
+            <p className="text-xs text-muted">Resultado</p>
+            <p className="font-mono text-xs">
+              {lastMeta
+                ? `${lastMeta.published ?? 0} publicadas · ${lastMeta.deduped ?? 0} dedup · ${lastMeta.needsReview ?? 0} revisão · ${lastMeta.errors ?? 0} erros`
+                : "—"}
+            </p>
           </div>
           <div>
             <p className="text-xs text-muted">Próxima execução</p>
-            <p className="text-warn">agendamento ainda não configurado no SITE</p>
+            <p>06:30 (horário de Brasília) — cron da Vercel no SITE</p>
           </div>
           <div>
-            <p className="text-xs text-muted">Detalhe</p>
-            <p className="truncate font-mono text-xs text-muted">
-              {last?.detail ? JSON.stringify(last.detail) : "—"}
-            </p>
+            <p className="text-xs text-muted">Descobertos na última</p>
+            <p className="tabular-nums">{lastMeta?.discovered ?? "—"}</p>
           </div>
         </div>
         <DailyTriggerForm ready={ready} />
       </Card>
+
+      {overview.dailyRuns.length > 0 ? (
+        <Card title="Histórico de execuções" subtitle="usage_events · cron_daily_news">
+          <ul className="space-y-1 text-sm">
+            {overview.dailyRuns.map((run, index) => {
+              const meta = (run.meta ?? {}) as DailyRunMeta;
+              return (
+                <li key={index} className="flex items-baseline gap-3 border-b border-line/50 py-1 last:border-0">
+                  <span className="w-32 shrink-0 font-mono text-xs text-muted">
+                    {formatDateTime(pickString(run, ["created_at"]))}
+                  </span>
+                  <span className="font-mono text-xs">
+                    {meta.published ?? 0} publicadas · {meta.discovered ?? 0} descobertas ·{" "}
+                    {meta.deduped ?? 0} dedup · {meta.needsReview ?? 0} revisão ·{" "}
+                    <span className={meta.errors ? "text-danger" : ""}>
+                      {meta.errors ?? 0} erros
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+      ) : null}
 
       <h2 className="pt-1 text-xs uppercase tracking-widest text-muted">Pipeline de hoje</h2>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

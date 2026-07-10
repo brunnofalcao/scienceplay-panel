@@ -36,16 +36,17 @@ export default async function CronPage() {
       <QueryDegradation errors={errors} />
 
       <Card title="Disparo manual">
-        <p className="text-sm text-warn">
-          Endpoint diário ainda não configurado no SITE.
-        </p>
-        <p className="mt-1 text-sm text-muted">
-          Quando o SITE expuser{" "}
-          <code className="font-mono text-xs">
-            POST {"{PUBLIC_SITE_URL}"}/api/internal/daily-news
-          </code>{" "}
-          (com segredo server-side), o disparo manual será habilitado aqui.
-          Nenhuma integração falsa foi criada.
+        <p className="text-sm">
+          O motor diário do SITE está no ar:{" "}
+          <code className="font-mono text-xs">GET {"{SITE}"}/api/cron/daily-news</code>{" "}
+          (Bearer CRON_SECRET), agendado às 06:30 de Brasília. O disparo manual e a
+          visão executiva ficam em{" "}
+          <a href="/production/daily" className="text-accent hover:underline">
+            /production/daily
+          </a>
+          . As execuções são registradas em usage_events (evento{" "}
+          <code className="font-mono text-xs">cron_daily_news</code>) — a tabela
+          cron_logs abaixo permanece para jobs que vierem a usá-la.
         </p>
       </Card>
 

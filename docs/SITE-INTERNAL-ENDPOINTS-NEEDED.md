@@ -1,5 +1,13 @@
 # ENDPOINTS INTERNOS NECESSÁRIOS NO SITE (scienceplay-platform)
 
+> **Atualização 2026-07-10:** o item 4 (motor diário) foi ENTREGUE pelo SITE em
+> formato diferente do proposto: `GET /api/cron/daily-news` com
+> `Authorization: Bearer {CRON_SECRET}` (em vez de POST + x-internal-secret).
+> O painel já integra: o disparo manual em /production/daily usa
+> `SITE_INTERNAL_API_SECRET` = valor do `CRON_SECRET` do SITE, e as execuções
+> são lidas de `usage_events` (evento `cron_daily_news`), onde o job grava o
+> resumo. Os itens 1–3 continuam pendentes.
+
 O painel (`/production`) orquestra a produção de NEWS, mas o **motor científico
 vive no SITE**. Enquanto estes endpoints não existirem, o painel mostra estado
 honesto ("Endpoint do SITE ainda não configurado") — nenhuma geração é

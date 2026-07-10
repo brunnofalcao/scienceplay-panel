@@ -71,6 +71,9 @@ export const REAL_USAGE_EVENTS = [
   "news_limit",
   "e2a_limit",
   "studio_limit",
+  // emitido pelo job diário do SITE (GET /api/cron/daily-news) com o resumo
+  // da execução em meta — adicionado em 2026-07-10
+  "cron_daily_news",
 ] as const;
 export type RealUsageEvent = (typeof REAL_USAGE_EVENTS)[number];
 

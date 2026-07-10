@@ -25,6 +25,8 @@ export interface ProductionOverview {
   byGrade: Array<{ name: string; count: number }>;
   byOrigin: Array<{ name: string; count: number }>;
   lastCron: GenericRow | null;
+  /** Execuções REAIS do motor diário — o SITE grava em usage_events (cron_daily_news) */
+  dailyRuns: GenericRow[];
   errors: QueryErrors;
 }
 
@@ -79,6 +81,22 @@ export async function fetchProductionOverview(
       ),
     ]);
 
+  const dailyRuns = await safeSelect(
+    db,
+    "usage_events",
+    "*",
+    errors,
+    (q) =>
+      (
+        q as {
+          eq: (c: string, v: string) => { order: (c: string, o: unknown) => unknown };
+        }
+      )
+        .eq("event", "cron_daily_news")
+        .order("created_at", { ascending: false }),
+    30,
+  );
+
   const areaName = (row: GenericRow): string | null => {
     const cat = row.categories as GenericRow | GenericRow[] | null;
     const fromCategory = Array.isArray(cat)
@@ -100,6 +118,7 @@ export async function fetchProductionOverview(
     byGrade: countBy(monthRows, (r) => pickString(r, ["evidence_grade"])).slice(0, 6),
     byOrigin: countBy(monthRows, (r) => pickString(r, ["origin_type"])).slice(0, 8),
     lastCron: cronRows[0] ?? null,
+    dailyRuns,
     errors,
   };
 }

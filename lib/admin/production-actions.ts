@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminActionContext } from "@/lib/admin/action-context";
 import { writeAuditLog } from "@/lib/admin/audit";
-import { callSiteInternal } from "@/lib/site/internal";
+import { callSiteDailyNews, callSiteInternal } from "@/lib/site/internal";
 import type { ActionResult } from "@/types/admin";
 
 /**
@@ -197,19 +197,36 @@ export async function generateByTheme(
   );
 }
 
-// ---- Disparo manual do motor diário (usado em /production/daily) ----
+// ---- Disparo manual do motor diário (endpoint REAL do SITE) ----
 
 export async function triggerDailyNews(
   _prev: ActionResult | null,
-  formData: FormData,
+  _formData: FormData,
 ): Promise<ActionResult> {
-  const limit = z.coerce.number().int().min(1).max(10).safeParse(formData.get("limit"));
-  if (!limit.success) return { ok: false, error: "Quantidade inválida." };
+  const ctx = await getAdminActionContext();
+  if ("error" in ctx) return { ok: false, error: ctx.error };
 
-  return runSiteCommand("production.daily_news", "/api/internal/daily-news", {
-    mode: "manual",
-    limit: limit.data,
-    area: null,
-    theme: null,
-  });
+  const result = await callSiteDailyNews();
+
+  if (!result.pending) {
+    await writeAuditLog(ctx.db, {
+      adminId: ctx.profile.id,
+      action: "production.daily_news",
+      entity: "site_internal",
+      entityId: null,
+      before: null,
+      after: {
+        path: "/api/cron/daily-news",
+        ok: result.ok,
+        message: result.message.slice(0, 300),
+      },
+    });
+  }
+
+  revalidatePath("/production/daily");
+  revalidatePath("/production");
+  revalidatePath("/cron");
+
+  if (result.ok) return { ok: true, message: result.message };
+  return { ok: false, error: result.message };
 }

@@ -268,15 +268,29 @@ export function DailyTriggerForm({ ready }: { ready: boolean }) {
   );
   return (
     <div className="space-y-3">
-      {!ready ? <EndpointPending /> : null}
-      <form action={formAction} className="flex items-end gap-3">
-        <Field label="Quantidade">
-          <input name="limit" type="number" min={1} max={10} defaultValue={5} disabled={!ready} className={inputClass} />
-        </Field>
+      {!ready ? (
+        <p className="rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
+          Defina <code className="font-mono">SITE_INTERNAL_API_SECRET</code> com o
+          MESMO valor do <code className="font-mono">CRON_SECRET</code> do SITE
+          para habilitar o disparo manual.
+        </p>
+      ) : null}
+      <form
+        action={formAction}
+        onSubmit={(event) => {
+          if (!window.confirm("Rodar o motor diário agora? Ele publica NEWS reais e pode levar alguns minutos.")) {
+            event.preventDefault();
+          }
+        }}
+      >
         <button type="submit" disabled={!ready || pending} className={buttonClass}>
-          {pending ? "Disparando…" : "Rodar motor diário agora"}
+          {pending ? "Rodando… (pode levar minutos)" : "Rodar motor diário agora"}
         </button>
       </form>
+      <p className="text-xs text-muted">
+        Quantidade por execução definida no SITE (DAILY_NEWS_COUNT, padrão 6).
+        Piso de qualidade e dedup do motor continuam valendo.
+      </p>
       <ActionFeedback state={state} />
     </div>
   );

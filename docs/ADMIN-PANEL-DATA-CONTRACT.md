@@ -41,7 +41,12 @@ migration destrutiva**. Mantenha este arquivo alinhado com o contrato compartilh
 ## `usage_events.event` — REAL vs PLANEJADO
 
 **Emitidos hoje** (os únicos que o painel consulta):
-`signup · theme_search · news_generated · news_deduped · possible_duplicate · e2a_used · studio_used · news_limit · e2a_limit · studio_limit`
+`signup · theme_search · news_generated · news_deduped · possible_duplicate · e2a_used · studio_used · news_limit · e2a_limit · studio_limit · cron_daily_news`
+
+> `cron_daily_news` (novo, 2026-07-10): emitido pelo job diário do SITE
+> (`GET /api/cron/daily-news`) com o resumo da execução em `meta`
+> (`published/discovered/needsReview/deduped/errors/items`). É a fonte oficial
+> das execuções do motor diário — `cron_logs` segue vazia por enquanto.
 
 **Planejados, ainda NÃO emitidos** (não usar como se existissem):
 `login, news_saved, content_copied, collection_created, daily_news_generated, cron_error`
