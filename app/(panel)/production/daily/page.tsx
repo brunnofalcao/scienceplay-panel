@@ -26,6 +26,7 @@ type DailyRunMeta = {
   discovered?: number;
   needsReview?: number;
   deduped?: number;
+  unresolved?: number;
   errors?: number;
 };
 
@@ -69,7 +70,7 @@ export default async function ProductionDailyPage() {
             <p className="text-xs text-muted">Resultado</p>
             <p className="font-mono text-xs">
               {lastMeta
-                ? `${lastMeta.published ?? 0} publicadas · ${lastMeta.deduped ?? 0} dedup · ${lastMeta.needsReview ?? 0} revisão · ${lastMeta.errors ?? 0} erros`
+                ? `${lastMeta.published ?? 0} publicadas · ${lastMeta.deduped ?? 0} dedup · ${lastMeta.needsReview ?? 0} revisão · ${lastMeta.unresolved ?? 0} não resolvidas · ${lastMeta.errors ?? 0} erros`
                 : "—"}
             </p>
           </div>
@@ -98,6 +99,10 @@ export default async function ProductionDailyPage() {
                   <span className="font-mono text-xs">
                     {meta.published ?? 0} publicadas · {meta.discovered ?? 0} descobertas ·{" "}
                     {meta.deduped ?? 0} dedup · {meta.needsReview ?? 0} revisão ·{" "}
+                    <span className={meta.unresolved ? "text-warn" : ""}>
+                      {meta.unresolved ?? 0} não resolvidas
+                    </span>{" "}
+                    ·{" "}
                     <span className={meta.errors ? "text-danger" : ""}>
                       {meta.errors ?? 0} erros
                     </span>
