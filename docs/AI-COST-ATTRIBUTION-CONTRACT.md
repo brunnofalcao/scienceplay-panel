@@ -1,4 +1,11 @@
-# CONTRATO DE ATRIBUIÇÃO DE CUSTO DE IA (proposta ao SITE)
+# CONTRATO DE ATRIBUIÇÃO DE CUSTO DE IA
+
+> **STATUS 2026-07-10: IMPLEMENTADO** — migration `0017_ai_logs_attribution`
+> aplicada ao banco; o motor do SITE (PR #2) preenche
+> `entity_type/entity_id/feature_run_id/request_group_id` para NEWS, E2A e
+> Studio. O painel mostra custo EXATO por NEWS em /production/costs assim que
+> as primeiras gerações com atribuição acontecerem. Gerações anteriores
+> permanecem sem vínculo (não rastreáveis, declaradas como tal).
 
 ## Situação atual (schema real, verificado)
 

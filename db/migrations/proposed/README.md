@@ -1,16 +1,10 @@
-# Migrations PROPOSTAS — NÃO APLICADAS
+# Migrations propostas — PROMOVIDAS ao SITE
 
-Diferente de `db/migrations/` (espelho de policies já aplicadas e mergeadas no
-SITE via PR #1), os arquivos desta pasta são **propostas**: ainda NÃO foram
-aplicados ao banco. O painel detecta a ausência das tabelas em runtime e mostra
-estado honesto (ex.: fila de candidatos em `/production/queue`).
-
-Processo correto (ordem do comando de Content Factory):
-
-1. Revisar a proposta.
-2. Copiar para `scienceplay-platform/db/migrations/` com a numeração oficial.
-3. Aplicar via SITE (dono do schema).
-4. O painel passa a usar automaticamente (leitura tolerante).
+**STATUS 2026-07-10:** as duas propostas desta pasta foram promovidas ao repo
+dono do schema como `scienceplay-platform/db/migrations/0015` e `0016` (PR #2),
+junto com a `0017_ai_logs_attribution` — e as três **já estão aplicadas** ao
+projeto `wetvjyfrmnfxargsynnn`. Os arquivos abaixo permanecem apenas como
+histórico da proposta original.
 
 | Arquivo | O que cria | Usado por |
 |---|---|---|

@@ -100,12 +100,17 @@ export default async function ProductionCostsPage({
         />
       </div>
 
-      <p className="rounded-lg border border-line bg-panel px-3 py-2 text-xs text-muted">
-        <span className="font-semibold text-warn">Custo por NEWS: não rastreável
-        com precisão no schema atual</span> — ai_logs não tem vínculo com a NEWS
-        gerada. Proposta de atribuição (entity_type/entity_id/feature_run_id) em{" "}
-        <code className="font-mono">docs/AI-COST-ATTRIBUTION-CONTRACT.md</code>.
-      </p>
+      {costs.newsAttributionActive ? null : (
+        <p className="rounded-lg border border-line bg-panel px-3 py-2 text-xs text-muted">
+          <span className="font-semibold text-warn">
+            Custo por NEWS: aguardando as primeiras gerações com atribuição
+          </span>{" "}
+          — as colunas de vínculo (entity_type/entity_id, migration 0017) já
+          existem; o motor passa a preenchê-las a partir do deploy do PR #2 do
+          SITE. Gerações antigas permanecem sem vínculo (honestamente não
+          rastreáveis).
+        </p>
+      )}
 
       <form method="get" className="flex flex-wrap items-end gap-2 text-sm">
         <input type="date" name="from" defaultValue={param(sp, "from")} className={inputClass} />
@@ -126,6 +131,11 @@ export default async function ProductionCostsPage({
       </form>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {costs.newsAttributionActive ? (
+          <Card title="Custo por NEWS (exato)" subtitle="via ai_logs.entity_id · top 10">
+            <BarList items={usdBars(costs.byNews)} />
+          </Card>
+        ) : null}
         <Card title="Custo por usuário">
           <BarList items={usdBars(costs.byUser)} emptyMessage="Sem dados." />
         </Card>

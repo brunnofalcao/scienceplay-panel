@@ -63,6 +63,10 @@ export interface CostAnalytics {
   byProvider: CostBucket[];
   byModel: CostBucket[];
   byDay: CostBucket[];
+  /** Custo EXATO por NEWS via ai_logs.entity_type/entity_id (migration 0017).
+   *  Vazio enquanto não houver gerações com atribuição. */
+  byNews: CostBucket[];
+  newsAttributionActive: boolean;
   /** heurística por nome de feature — rotulado como estimado na UI */
   e2aCost: number;
   studioCost: number;
@@ -168,6 +172,32 @@ export async function fetchCostAnalytics(
     .sort((a, b) => a.name.localeCompare(b.name))
     .slice(-30);
 
+  // Custo exato por NEWS: chamadas com entity_type='news' (0017). Enriquecemos
+  // os títulos das top NEWS para a leitura executiva.
+  const newsCostRows = rows.filter((r) => r.entityType === "news" && r.entityId);
+  let byNews = bucketize(newsCostRows, (r) => r.entityId).slice(0, 10);
+  if (byNews.length > 0) {
+    const titles = await safeSelect(
+      db,
+      "news_i18n",
+      "news_id, title",
+      errors,
+      (q) =>
+        (q as { in: (c: string, v: string[]) => unknown }).in(
+          "news_id",
+          byNews.map((b) => b.name),
+        ),
+      byNews.length * 3,
+    );
+    const titleByNews = new Map(
+      titles.map((t) => [String(t.news_id), pickString(t, ["title"]) ?? String(t.news_id)]),
+    );
+    byNews = byNews.map((b) => ({
+      ...b,
+      name: titleByNews.get(b.name) ?? b.name,
+    }));
+  }
+
   return {
     rows,
     sampleSize: logRows.length,
@@ -190,6 +220,8 @@ export async function fetchCostAnalytics(
     byProvider: bucketize(rows, (r) => r.provider),
     byModel: bucketize(rows, (r) => r.model),
     byDay,
+    byNews,
+    newsAttributionActive: newsCostRows.length > 0,
     e2aCost: cost(rows.filter((r) => /e2a|practice/i.test(r.feature))),
     studioCost: cost(rows.filter((r) => /studio|content/i.test(r.feature))),
     errors_: errors,

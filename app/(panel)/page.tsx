@@ -66,8 +66,19 @@ export default async function DashboardPage() {
         <StatCard label="Custo IA no mês" value={formatUsd(costs.totals.costMonth)} />
         <StatCard
           label="Custo médio por NEWS"
-          value="não rastreável"
-          hint="ai_logs sem vínculo com NEWS — ver contrato de atribuição"
+          value={
+            costs.newsAttributionActive
+              ? formatUsd(
+                  costs.byNews.reduce((sum, b) => sum + b.costUsd, 0) /
+                    costs.byNews.length,
+                )
+              : "aguardando dados"
+          }
+          hint={
+            costs.newsAttributionActive
+              ? "exato · via atribuição em ai_logs"
+              : "atribuição ativa a partir das próximas gerações"
+          }
         />
         <StatCard
           label="Custo médio por usuário"

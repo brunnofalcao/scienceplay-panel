@@ -102,6 +102,7 @@ export async function callSiteInternal(
       headers: {
         "content-type": "application/json",
         "x-internal-secret": secret,
+        authorization: `Bearer ${secret}`,
       },
       body: JSON.stringify(payload),
       cache: "no-store",

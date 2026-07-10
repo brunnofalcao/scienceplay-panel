@@ -907,6 +907,8 @@ export interface AiLogItem {
   error: string | null;
   fallback: boolean;
   userId: string | null;
+  entityType: string | null;
+  entityId: string | null;
 }
 
 export function mapAiLog(row: GenericRow): AiLogItem {
@@ -928,6 +930,8 @@ export function mapAiLog(row: GenericRow): AiLogItem {
       /fallback|failover/i.test(status) ||
       /fallback|failover/i.test(pickString(row, ["feature"]) ?? ""),
     userId: row.user_id != null ? String(row.user_id) : null,
+    entityType: pickString(row, ["entity_type"]),
+    entityId: row.entity_id != null ? String(row.entity_id) : null,
   };
 }
 
