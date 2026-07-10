@@ -6,6 +6,7 @@ import { formatDateTime, formatMs, formatNumber, formatUsd } from "@/lib/formatt
 import { BarList } from "@/components/charts/BarList";
 import { Table, Td } from "@/components/tables/Table";
 import { Card, StatCard } from "@/components/ui/Card";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
@@ -18,11 +19,12 @@ const param = (sp: SearchParams, key: string): string => {
   return typeof v === "string" ? v.trim() : "";
 };
 
-// barra proporcional ao nº de chamadas; custo formatado no rótulo
+// barra proporcional ao custo; valor à direita, nome limpo
 function usdBars(buckets: Array<{ name: string; count: number; costUsd: number }>) {
   return buckets.slice(0, 10).map((b) => ({
-    name: `${b.name} · ${formatUsd(b.costUsd)}`,
-    count: b.count,
+    name: b.name,
+    count: Math.round(b.costUsd * 1_000_000) || b.count,
+    hint: formatUsd(b.costUsd),
   }));
 }
 
@@ -177,8 +179,8 @@ export default async function ProductionCostsPage({
                 <Td className="font-mono text-xs tabular-nums">{row.tokensOut ?? "—"}</Td>
                 <Td className="font-mono text-xs">{row.costUsd !== null ? formatUsd(row.costUsd) : "—"}</Td>
                 <Td className="font-mono text-xs">{formatMs(row.latencyMs)}</Td>
-                <Td className={`font-mono text-xs ${/error|fail/i.test(row.status) ? "text-danger" : ""}`}>
-                  {row.status}
+                <Td>
+                  <StatusBadge status={row.status} />
                 </Td>
                 <Td className="max-w-48 truncate text-xs text-danger">{row.error ?? "—"}</Td>
               </tr>

@@ -171,8 +171,9 @@ export default async function ProductionDailyPage() {
         <Card title="Custo por modelo" subtitle="amostra de ai_logs">
           <BarList
             items={costs.byModel.slice(0, 8).map((b) => ({
-              name: `${b.name} · ${formatUsd(b.costUsd)}`,
+              name: b.name,
               count: b.count,
+              hint: formatUsd(b.costUsd),
             }))}
             emptyMessage="Sem chamadas de IA."
           />
@@ -180,8 +181,9 @@ export default async function ProductionDailyPage() {
         <Card title="Custo por dia" subtitle="últimos 30 dias com dados">
           <BarList
             items={costs.byDay.map((b) => ({
-              name: `${b.name} · ${formatUsd(b.costUsd)}`,
+              name: b.name,
               count: b.count,
+              hint: formatUsd(b.costUsd),
             }))}
             emptyMessage="Sem chamadas de IA."
           />

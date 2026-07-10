@@ -8,18 +8,20 @@ export function Table({
   children: ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-line">
+    <div className="overflow-x-auto rounded-2xl border border-line">
       <table className="w-full min-w-max text-left text-sm">
-        <thead className="border-b border-line bg-panel-2 text-xs uppercase tracking-wide text-muted">
+        <thead className="bg-panel-2 text-[11px] uppercase tracking-wider text-faint">
           <tr>
             {head.map((h) => (
-              <th key={h} className="px-3 py-2 font-medium">
+              <th key={h} className="whitespace-nowrap px-3.5 py-2.5 font-medium">
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-line bg-panel">{children}</tbody>
+        <tbody className="divide-y divide-line/70 bg-panel [&>tr:hover]:bg-panel-2/60">
+          {children}
+        </tbody>
       </table>
     </div>
   );
@@ -32,5 +34,5 @@ export function Td({
   children: ReactNode;
   className?: string;
 }) {
-  return <td className={`px-3 py-2 align-top ${className}`}>{children}</td>;
+  return <td className={`px-3.5 py-2.5 align-middle ${className}`}>{children}</td>;
 }

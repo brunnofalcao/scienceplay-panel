@@ -6,6 +6,7 @@ import { formatDateTime, formatMs, formatNumber, formatUsd } from "@/lib/formatt
 import { BarList } from "@/components/charts/BarList";
 import { Table, Td } from "@/components/tables/Table";
 import { Card, StatCard } from "@/components/ui/Card";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
@@ -102,27 +103,30 @@ export default async function AiLogsPage({
       </form>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card title="Por dia" subtitle="chamadas · custo">
+        <Card title="Por dia" subtitle="chamadas e custo">
           <BarList
             items={groups.byDay.map((g) => ({
-              name: `${g.name} · ${formatUsd(g.costUsd)}`,
+              name: g.name,
               count: g.count,
+              hint: `${g.count} · ${formatUsd(g.costUsd)}`,
             }))}
           />
         </Card>
         <Card title="Por feature">
           <BarList
             items={groups.byFeature.map((g) => ({
-              name: `${g.name} · ${formatUsd(g.costUsd)}`,
+              name: g.name,
               count: g.count,
+              hint: `${g.count} · ${formatUsd(g.costUsd)}`,
             }))}
           />
         </Card>
         <Card title="Por provider/modelo">
           <BarList
             items={groups.byProviderModel.map((g) => ({
-              name: `${g.name} · ${formatUsd(g.costUsd)}`,
+              name: g.name,
               count: g.count,
+              hint: `${g.count} · ${formatUsd(g.costUsd)}`,
             }))}
           />
         </Card>
@@ -155,8 +159,8 @@ export default async function AiLogsPage({
               <Td className="font-mono text-xs">{log.feature}</Td>
               <Td className="font-mono text-xs">{log.provider}</Td>
               <Td className="max-w-44 truncate font-mono text-xs">{log.model}</Td>
-              <Td className={`font-mono text-xs ${/error|fail/i.test(log.status) ? "text-danger" : ""}`}>
-                {log.status}
+              <Td>
+                <StatusBadge status={log.status} />
               </Td>
               <Td className="font-mono text-xs">{formatMs(log.latencyMs)}</Td>
               <Td className="font-mono text-xs tabular-nums">{log.tokensIn ?? "—"}</Td>

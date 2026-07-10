@@ -1,20 +1,23 @@
 @import "tailwindcss";
 
 /*
- * Tokens do Brandbook Science Play v2.1 (§12–14):
- * - Roxo Science (cor-mãe) #652E78 · nunca muda entre temas
- * - Accent de sistema: Violeta elétrico #A855F7
- * - Superfícies Dark S0–S4 · neutros claros para o tema de leitura
- * - Regra 60/30/10: superfícies+neutros / roxo / accent
+ * Sistema visual — Brandbook Science Play v2.1 (§12–14).
+ * Núcleo de marca fixo (roxo #652E78, violeta #A855F7); neutros/superfícies
+ * calibrados para leitura densa e calma (cockpit, não landing page).
+ * Escala de elevação: bg < panel < panel-2 < panel-3.
  */
 @theme inline {
   --color-bg: var(--sp-bg);
   --color-panel: var(--sp-panel);
   --color-panel-2: var(--sp-panel-2);
+  --color-panel-3: var(--sp-panel-3);
   --color-line: var(--sp-line);
+  --color-line-strong: var(--sp-line-strong);
   --color-ink: var(--sp-ink);
   --color-muted: var(--sp-muted);
+  --color-faint: var(--sp-faint);
   --color-accent: var(--sp-accent);
+  --color-accent-soft: var(--sp-accent-soft);
   --color-brand: var(--sp-brand);
   --color-brand-strong: var(--sp-brand-strong);
   --color-ok: var(--sp-ok);
@@ -25,48 +28,71 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Tema padrão: Dark (superfícies S0–S4 do brandbook) */
+/* Tema padrão: Dark */
 :root {
-  --sp-bg: #0e0a12; /* S0 */
-  --sp-panel: #15101a; /* S1 */
-  --sp-panel-2: #1c1622; /* S2 */
-  --sp-line: #2c2433; /* S4 */
-  --sp-ink: #efedf1;
-  --sp-muted: #928f96;
-  --sp-accent: #a855f7; /* violeta elétrico 500 */
-  --sp-brand: #652e78; /* roxo Science 600 — núcleo, fixo */
-  --sp-brand-strong: #532562; /* roxo 700 */
-  --sp-ok: #34d399;
-  --sp-warn: #fbbf24;
-  --sp-danger: #ef5350;
+  --sp-bg: #0b0810;
+  --sp-panel: #14101c;
+  --sp-panel-2: #1b1526;
+  --sp-panel-3: #241d31;
+  --sp-line: #271f36;
+  --sp-line-strong: #372d4b;
+  --sp-ink: #f2eef7;
+  --sp-muted: #a29bb0; /* contraste elevado vs. antes */
+  --sp-faint: #6f6880;
+  --sp-accent: #b16cf7; /* violeta legível no escuro */
+  --sp-accent-soft: rgba(177, 108, 247, 0.14);
+  --sp-brand: #652e78;
+  --sp-brand-strong: #7c399a;
+  --sp-ok: #3ddc97;
+  --sp-warn: #f5b53d;
+  --sp-danger: #f4677a;
 }
 
-/* Tema claro ("Claro para leitura e B2B") — neutros claros do brandbook */
+/* Tema claro ("Claro para leitura e B2B") */
 html.light {
-  --sp-bg: #f7f6f8;
+  --sp-bg: #f6f4f9;
   --sp-panel: #ffffff;
-  --sp-panel-2: #efedf1;
-  --sp-line: #dcdbdb;
+  --sp-panel-2: #f2eef7;
+  --sp-panel-3: #eae3f2;
+  --sp-line: #e5e0ec;
+  --sp-line-strong: #d3cbe0;
   --sp-ink: #1c1622;
-  --sp-muted: #6e6b72;
-  --sp-accent: #7e2bd4; /* violeta 700 — contraste no claro */
+  --sp-muted: #665f73;
+  --sp-faint: #938ca3;
+  --sp-accent: #7e2bd4;
+  --sp-accent-soft: rgba(126, 43, 212, 0.1);
   --sp-brand: #652e78;
   --sp-brand-strong: #532562;
-  --sp-ok: #047857;
-  --sp-warn: #b45309;
+  --sp-ok: #0f9d63;
+  --sp-warn: #b06d0a;
   --sp-danger: #d22429;
 }
 
 body {
   background: var(--sp-bg);
   color: var(--sp-ink);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Sora em títulos de página (H1) — "títulos hero, números de impacto" */
 h1 {
   font-family: var(--font-sora), var(--font-inter), sans-serif;
+  letter-spacing: -0.01em;
 }
 
 ::selection {
-  background: rgba(168, 85, 247, 0.3);
+  background: rgba(177, 108, 247, 0.28);
+}
+
+/* Scrollbar discreta (tabelas densas) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sp-line-strong) transparent;
+}
+*::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--sp-line-strong);
+  border-radius: 9999px;
 }

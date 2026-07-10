@@ -223,8 +223,9 @@ export default async function UserDetailPage({
             <p className="mb-2 text-xs text-muted">Custo por feature</p>
             <BarList
               items={aiCost.byFeature.slice(0, 8).map((b) => ({
-                name: `${b.name} · ${formatUsd(b.costUsd)}`,
+                name: b.name,
                 count: b.count,
+                hint: formatUsd(b.costUsd),
               }))}
               emptyMessage="Nenhuma chamada de IA deste usuário."
             />
