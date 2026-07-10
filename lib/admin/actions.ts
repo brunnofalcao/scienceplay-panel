@@ -56,6 +56,20 @@ export async function moderateNews(
 
   const patch: Record<string, unknown> = { status: target.status };
   if (action === "publish") {
+    // Guard de integridade: NEWS com esqueleto mock ("[MODO MOCK]") nunca pode ir
+    // ao ar — nem manualmente. Ela é gerada sem IA OU é o fallback de uma geração
+    // que falhou a validação; em ambos os casos precisa passar pelo motor real.
+    // Checamos o texto (robusto), pois o flag body.mock pode vir false no fallback.
+    const mockText = ["main_result", "bottom_line", "limitations", "evidence_grade_rationale", "do_not_claim"]
+      .map((k) => (before as Record<string, unknown>)[k])
+      .some((v) => typeof v === "string" && v.includes("MODO MOCK"));
+    if (mockText) {
+      return {
+        ok: false,
+        error:
+          "Conteúdo MOCK (sem geração real de IA) não pode ser publicado. Regenere a NEWS pelo motor real antes de publicar.",
+      };
+    }
     patch.published_at = new Date().toISOString();
   } else if (action === "unpublish") {
     patch.published_at = null;
