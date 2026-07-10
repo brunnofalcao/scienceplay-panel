@@ -9,6 +9,9 @@ import { BarList } from "@/components/charts/BarList";
 import { Card, StatCard } from "@/components/ui/Card";
 import { AttentionRow } from "@/components/ui/AttentionRow";
 import { SectionHeader } from "@/components/ui/SectionHeader";
+import { Collapsible } from "@/components/ui/Collapsible";
+import { GuidedTour } from "@/components/ui/GuidedTour";
+import { TOURS } from "@/lib/tours";
 import { NotConfigured, ServiceRoleMissing } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
 
@@ -154,85 +157,90 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <SectionHeader>Origem do conteúdo</SectionHeader>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard
-          label="Enviados por usuários"
-          value={formatNumber(data.news.byOrigin.userUpload)}
-        />
-        <StatCard
-          label="Time automatizado"
-          value={formatNumber(data.news.byOrigin.teamAutomated)}
-        />
-        <StatCard label="Manuais" value={formatNumber(data.news.byOrigin.teamManual)} />
-        <StatCard label="Posts legados" value={formatNumber(data.legacyTotal)} />
-      </div>
-
-      <SectionHeader>Produto &amp; IA</SectionHeader>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard
-          label="E2A usados"
-          value={formatNumber(data.usage.e2aUsed)}
-          hint="event = e2a_used"
-        />
-        <StatCard
-          label="Content Studio usados"
-          value={formatNumber(data.usage.studioUsed)}
-          hint="event = studio_used"
-        />
-        <StatCard
-          label="Limites Free atingidos"
-          value={formatNumber(limitsTotal)}
-          tone={limitsTotal > 0 ? "warn" : "default"}
-          hint={`news ${data.usage.limitsHit.news} · e2a ${data.usage.limitsHit.e2a} · studio ${data.usage.limitsHit.studio}`}
-        />
-        <StatCard
-          label="Custo estimado de IA"
-          value={formatUsd(data.ai.costUsd)}
-          hint={`${formatNumber(data.ai.calls)} chamadas (amostra)`}
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard
-          label="Erros de IA"
-          value={formatNumber(data.ai.errors)}
-          tone={data.ai.errors > 0 ? "danger" : "ok"}
-        />
-        <StatCard
-          label="Failovers de IA"
-          value={formatNumber(data.ai.fallbacks)}
-          tone={data.ai.fallbacks > 0 ? "warn" : "default"}
-        />
-      </div>
-
-      <div className="grid gap-4 pt-2 md:grid-cols-2 xl:grid-cols-3">
-        <Card title="Produção Science Play × demanda dos usuários">
-          <BarList
-            items={[
-              { name: "Time (automatizado + manual)", count: data.demandVsProduction.team },
-              { name: "Enviado por usuários", count: data.demandVsProduction.userUpload },
-            ]}
+      {/* Seções secundárias recolhidas — a dobra fica no essencial */}
+      <Collapsible title="Origem do conteúdo" hint="de onde vêm as NEWS">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <StatCard
+            label="Enviados por usuários"
+            value={formatNumber(data.news.byOrigin.userUpload)}
           />
-        </Card>
-        <Card title="Top áreas produzidas" subtitle="NEWS do time, por área">
-          <BarList items={data.tops.areasProduced} emptyMessage="Sem dados de área (validar schema)." />
-        </Card>
-        <Card title="Top áreas enviadas por usuários">
-          <BarList items={data.tops.areasSubmitted} emptyMessage="Sem dados de área (validar schema)." />
-        </Card>
-        <Card title="Top tags">
-          <BarList items={data.tops.tags} />
-        </Card>
-        <Card title="Top profissões" subtitle="perfil dos usuários">
-          <BarList items={data.tops.professions} />
-        </Card>
-        <Card title="Top formatos do Content Studio" subtitle="meta.format de studio_used">
-          <BarList items={data.tops.formats} />
-        </Card>
-        <Card title="Top usuários mais ativos" subtitle="por usage_events">
-          <BarList items={data.tops.activeUsers} />
-        </Card>
-      </div>
+          <StatCard
+            label="Time automatizado"
+            value={formatNumber(data.news.byOrigin.teamAutomated)}
+          />
+          <StatCard label="Manuais" value={formatNumber(data.news.byOrigin.teamManual)} />
+          <StatCard label="Posts legados" value={formatNumber(data.legacyTotal)} />
+        </div>
+      </Collapsible>
+
+      <Collapsible title="Produto & IA" hint="uso de E2A/Studio, limites e IA">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <StatCard
+            label="E2A usados"
+            value={formatNumber(data.usage.e2aUsed)}
+            hint="event = e2a_used"
+          />
+          <StatCard
+            label="Content Studio usados"
+            value={formatNumber(data.usage.studioUsed)}
+            hint="event = studio_used"
+          />
+          <StatCard
+            label="Limites Free atingidos"
+            value={formatNumber(limitsTotal)}
+            tone={limitsTotal > 0 ? "warn" : "default"}
+            hint={`news ${data.usage.limitsHit.news} · e2a ${data.usage.limitsHit.e2a} · studio ${data.usage.limitsHit.studio}`}
+          />
+          <StatCard
+            label="Custo estimado de IA"
+            value={formatUsd(data.ai.costUsd)}
+            hint={`${formatNumber(data.ai.calls)} chamadas (amostra)`}
+          />
+          <StatCard
+            label="Erros de IA"
+            value={formatNumber(data.ai.errors)}
+            tone={data.ai.errors > 0 ? "danger" : "ok"}
+          />
+          <StatCard
+            label="Failovers de IA"
+            value={formatNumber(data.ai.fallbacks)}
+            tone={data.ai.fallbacks > 0 ? "warn" : "default"}
+          />
+        </div>
+      </Collapsible>
+
+      <Collapsible title="Rankings e demanda × produção" hint="top áreas, tags, perfis">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <Card title="Produção Science Play × demanda dos usuários">
+            <BarList
+              items={[
+                { name: "Time (automatizado + manual)", count: data.demandVsProduction.team },
+                { name: "Enviado por usuários", count: data.demandVsProduction.userUpload },
+              ]}
+            />
+          </Card>
+          <Card title="Top áreas produzidas" subtitle="NEWS do time, por área">
+            <BarList items={data.tops.areasProduced} emptyMessage="Sem dados de área." />
+          </Card>
+          <Card title="Top áreas enviadas por usuários">
+            <BarList items={data.tops.areasSubmitted} emptyMessage="Sem dados de área." />
+          </Card>
+          <Card title="Top tags">
+            <BarList items={data.tops.tags} />
+          </Card>
+          <Card title="Top profissões" subtitle="perfil dos usuários">
+            <BarList items={data.tops.professions} />
+          </Card>
+          <Card title="Top formatos do Content Studio" subtitle="meta.format de studio_used">
+            <BarList items={data.tops.formats} />
+          </Card>
+          <Card title="Top usuários mais ativos" subtitle="por usage_events">
+            <BarList items={data.tops.activeUsers} />
+          </Card>
+        </div>
+      </Collapsible>
+
+      <GuidedTour screen="Visão geral" sections={TOURS["Visão geral"]} />
     </>
   );
 }

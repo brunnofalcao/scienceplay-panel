@@ -16,6 +16,8 @@ import { BarList } from "@/components/charts/BarList";
 import { Card, StatCard } from "@/components/ui/Card";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
+import { GuidedTour } from "@/components/ui/GuidedTour";
+import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = { title: "Produção Diária" };
 // O disparo manual espera o motor do SITE terminar (até 300s por lá).
@@ -189,6 +191,7 @@ export default async function ProductionDailyPage() {
           />
         </Card>
       </div>
+      <GuidedTour screen="Produção Diária" sections={TOURS["Produção Diária"]} />
     </>
   );
 }

@@ -10,6 +10,8 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
+import { GuidedTour } from "@/components/ui/GuidedTour";
+import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = { title: "AI Logs" };
 
@@ -177,6 +179,7 @@ export default async function AiLogsPage({
           ))}
         </Table>
       )}
+      <GuidedTour screen="AI Logs" sections={TOURS["AI Logs"]} />
     </>
   );
 }

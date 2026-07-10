@@ -14,6 +14,8 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
+import { GuidedTour } from "@/components/ui/GuidedTour";
+import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = { title: "Fila de Produção" };
 
@@ -114,6 +116,7 @@ export default async function ProductionQueuePage() {
           </Table>
         )}
       </Card>
+      <GuidedTour screen="Fila de Produção" sections={TOURS["Fila de Produção"]} />
     </>
   );
 }

@@ -14,6 +14,8 @@ import {
 import { Card, StatCard } from "@/components/ui/Card";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
+import { GuidedTour } from "@/components/ui/GuidedTour";
+import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = { title: "Produção de NEWS" };
 
@@ -90,6 +92,7 @@ export default async function ProductionPage() {
           <ThemeForm ready={ready} />
         </Card>
       </div>
+      <GuidedTour screen="Produção de NEWS" sections={TOURS["Produção de NEWS"]} />
     </>
   );
 }

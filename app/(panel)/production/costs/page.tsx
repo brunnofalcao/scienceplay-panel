@@ -10,6 +10,8 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
+import { GuidedTour } from "@/components/ui/GuidedTour";
+import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = { title: "Custos de IA" };
 
@@ -188,6 +190,7 @@ export default async function ProductionCostsPage({
           </Table>
         )}
       </Card>
+      <GuidedTour screen="Custos de IA" sections={TOURS["Custos de IA"]} />
     </>
   );
 }

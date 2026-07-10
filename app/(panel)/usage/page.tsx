@@ -9,6 +9,8 @@ import { Table, Td } from "@/components/tables/Table";
 import { Card, StatCard } from "@/components/ui/Card";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
+import { GuidedTour } from "@/components/ui/GuidedTour";
+import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = { title: "Usage" };
 
@@ -128,6 +130,7 @@ export default async function UsagePage({
           </Table>
         )}
       </Card>
+      <GuidedTour screen="Usage" sections={TOURS["Usage"]} />
     </>
   );
 }

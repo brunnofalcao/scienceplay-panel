@@ -8,6 +8,8 @@ import { Table, Td } from "@/components/tables/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
+import { GuidedTour } from "@/components/ui/GuidedTour";
+import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = { title: "Usuários" };
 
@@ -190,6 +192,7 @@ export default async function UsersPage({
           ))}
         </Table>
       )}
+      <GuidedTour screen="Usuários" sections={TOURS["Usuários"]} />
     </>
   );
 }

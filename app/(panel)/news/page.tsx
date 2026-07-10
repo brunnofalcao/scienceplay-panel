@@ -17,6 +17,8 @@ import { StatCard } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NotConfigured, ServiceRoleMissing } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
+import { GuidedTour } from "@/components/ui/GuidedTour";
+import { TOURS } from "@/lib/tours";
 
 export const metadata: Metadata = { title: "NEWS" };
 
@@ -223,6 +225,7 @@ export default async function NewsPage({
           ))}
         </Table>
       )}
+      <GuidedTour screen="NEWS" sections={TOURS["NEWS"]} />
     </>
   );
 }
