@@ -70,6 +70,25 @@ const actionOk = after.includes("criado em tags") && !after.includes("Applicatio
 if (!actionOk) failures++;
 console.log(`${actionOk ? "PASS" : "FAIL"} | server action criar tag`);
 
+// fluxo de esqueci-minha-senha (páginas públicas)
+const ctx2 = await browser.newContext();
+const page2 = await ctx2.newPage();
+await page2.goto(`${BASE}/forgot-password`, { waitUntil: "networkidle" });
+await page2.fill("#email", "mockadmin@test.dev");
+await page2.locator('form button[type="submit"]').click();
+await page2.waitForTimeout(2000);
+const forgotText = (await page2.textContent("body")) ?? "";
+const forgotOk = forgotText.includes("link de redefinição foi enviado");
+if (!forgotOk) failures++;
+console.log(`${forgotOk ? "PASS" : "FAIL"} | forgot-password envia e confirma`);
+
+const resetResp = await page2.goto(`${BASE}/reset-password`, { waitUntil: "networkidle" });
+const resetText = (await page2.textContent("body")) ?? "";
+const resetOk = resetResp?.status() === 200 && resetText.includes("Definir nova senha");
+if (!resetOk) failures++;
+console.log(`${resetOk ? "PASS" : "FAIL"} | reset-password renderiza`);
+await ctx2.close();
+
 await browser.close();
 console.log(`\n${failures === 0 ? "TODOS PASS" : failures + " FAIL"}`);
 process.exit(failures ? 1 : 0);

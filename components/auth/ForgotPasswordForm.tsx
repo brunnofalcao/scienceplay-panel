@@ -1,13 +1,26 @@
 "use client";
 
 import { useActionState } from "react";
-import { login, type LoginState } from "@/lib/auth/actions";
+import {
+  requestPasswordReset,
+  type ResetRequestState,
+} from "@/lib/auth/actions";
 
-export function LoginForm() {
-  const [state, formAction, pending] = useActionState<LoginState, FormData>(
-    login,
+export function ForgotPasswordForm() {
+  const [state, formAction, pending] = useActionState<ResetRequestState, FormData>(
+    requestPasswordReset,
     null,
   );
+
+  if (state?.sent) {
+    return (
+      <p className="mt-6 rounded-lg border border-ok/40 bg-ok/10 p-4 text-sm text-ok">
+        Se este e-mail estiver cadastrado, o link de redefinição foi enviado.
+        Confira a caixa de entrada (e o spam) — o link abre a tela de senha
+        nova aqui no painel.
+      </p>
+    );
+  }
 
   return (
     <form action={formAction} className="mt-6 space-y-4">
@@ -24,40 +37,18 @@ export function LoginForm() {
           className="mt-1 w-full rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm outline-none focus:border-accent"
         />
       </div>
-      <div>
-        <label htmlFor="password" className="block text-sm text-muted">
-          Senha
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          autoComplete="current-password"
-          className="mt-1 w-full rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm outline-none focus:border-accent"
-        />
-      </div>
-
       {state?.error ? (
         <p className="rounded-lg border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
           {state.error}
         </p>
       ) : null}
-
       <button
         type="submit"
         disabled={pending}
         className="w-full rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-strong disabled:opacity-50"
       >
-        {pending ? "Entrando…" : "Entrar"}
+        {pending ? "Enviando…" : "Enviar link de redefinição"}
       </button>
-
-      <a
-        href="/forgot-password"
-        className="block text-center text-sm text-accent hover:underline"
-      >
-        Esqueci minha senha
-      </a>
     </form>
   );
 }
