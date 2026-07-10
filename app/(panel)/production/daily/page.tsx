@@ -14,6 +14,7 @@ import { hasSiteInternalSecret } from "@/lib/site/internal";
 import { DailyTriggerForm } from "@/components/admin/production/ProductionForms";
 import { BarList } from "@/components/charts/BarList";
 import { Card, StatCard } from "@/components/ui/Card";
+import { Collapsible } from "@/components/ui/Collapsible";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
 import { GuidedTour } from "@/components/ui/GuidedTour";
@@ -56,6 +57,7 @@ export default async function ProductionDailyPage() {
       <QueryDegradation errors={[...overview.errors, ...costs.errors_]} />
 
       <Card
+        tourAnchor="daily-engine"
         title="Motor diário"
         subtitle="GET {SITE}/api/cron/daily-news · agendado 06:30 BRT (Vercel cron) · publica até 6 NEWS/dia"
       >
@@ -89,7 +91,7 @@ export default async function ProductionDailyPage() {
       </Card>
 
       {overview.dailyRuns.length > 0 ? (
-        <Card title="Histórico de execuções" subtitle="usage_events · cron_daily_news">
+        <Card tourAnchor="daily-history" title="Histórico de execuções" subtitle="usage_events · cron_daily_news">
           <ul className="space-y-1 text-sm">
             {overview.dailyRuns.map((run, index) => {
               const meta = (run.meta ?? {}) as DailyRunMeta;
@@ -116,7 +118,7 @@ export default async function ProductionDailyPage() {
         </Card>
       ) : null}
 
-      <h2 className="pt-1 text-xs uppercase tracking-widest text-muted">Pipeline de hoje</h2>
+      <Collapsible title="Pipeline de hoje" hint="métricas do dia, custos e quebras de produção">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="NEWS geradas hoje" value={formatNumber(overview.today)} />
         <StatCard label="Publicadas hoje" value={formatNumber(overview.publishedToday)} tone="ok" />
@@ -191,6 +193,7 @@ export default async function ProductionDailyPage() {
           />
         </Card>
       </div>
+      </Collapsible>
       <GuidedTour screen="Produção Diária" sections={TOURS["Produção Diária"]} />
     </>
   );

@@ -40,6 +40,7 @@ export default async function ProductionQueuePage() {
       <QueryDegradation errors={queue.errors} />
 
       <Card
+        tourAnchor="queue-candidates"
         title="Candidatos capturados (source_candidates)"
         subtitle="alimentada pela captura de estudos"
       >
@@ -82,6 +83,7 @@ export default async function ProductionQueuePage() {
       </Card>
 
       <Card
+        tourAnchor="queue-editorial"
         title={`Fila editorial (${formatNumber(queue.items.length)})`}
         subtitle="NEWS em generated / needs_review / possible_duplicate / draft — ações reais, auditadas"
       >

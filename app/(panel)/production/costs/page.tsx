@@ -68,7 +68,7 @@ export default async function ProductionCostsPage({
       </p>
       <QueryDegradation errors={costs.errors_} />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div data-tour="cost-totals" className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="Custo hoje" value={formatUsd(costs.totals.costToday)} />
         <StatCard label="Custo no mês" value={formatUsd(costs.totals.costMonth)} />
         <StatCard
@@ -116,7 +116,7 @@ export default async function ProductionCostsPage({
         </p>
       )}
 
-      <form method="get" className="flex flex-wrap items-end gap-2 text-sm">
+      <form data-tour="cost-filters" method="get" className="flex flex-wrap items-end gap-2 text-sm">
         <input type="date" name="from" defaultValue={param(sp, "from")} className={inputClass} />
         <input type="date" name="to" defaultValue={param(sp, "to")} className={inputClass} />
         <input name="feature" defaultValue={param(sp, "feature")} placeholder="Feature" className={`${inputClass} w-32`} />
@@ -134,7 +134,7 @@ export default async function ProductionCostsPage({
         </button>
       </form>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div data-tour="cost-breakdowns" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {costs.newsAttributionActive ? (
           <Card title="Custo por NEWS (exato)" subtitle="via ai_logs.entity_id · top 10">
             <BarList items={usdBars(costs.byNews)} />

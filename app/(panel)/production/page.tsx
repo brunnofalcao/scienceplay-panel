@@ -68,24 +68,28 @@ export default async function ProductionPage() {
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card
+          tourAnchor="capturar"
           title="Capturar estudos novos"
           subtitle="POST {SITE}/api/internal/admin/capture-sources"
         >
           <CaptureForm ready={ready} />
         </Card>
         <Card
+          tourAnchor="grade"
           title="Gerar por grau de evidência"
           subtitle="POST {SITE}/api/internal/admin/generate-news-batch · mode=grade"
         >
           <GradeForm ready={ready} />
         </Card>
         <Card
+          tourAnchor="batch"
           title="Gerar lote"
           subtitle="POST {SITE}/api/internal/admin/generate-news-batch · mode=batch"
         >
           <BatchForm ready={ready} />
         </Card>
         <Card
+          tourAnchor="theme"
           title="Gerar por tema"
           subtitle="POST {SITE}/api/internal/admin/generate-news-batch · mode=theme"
         >

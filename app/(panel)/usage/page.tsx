@@ -51,7 +51,7 @@ export default async function UsagePage({
       </p>
       <QueryDegradation errors={data.errors} />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div data-tour="usage-cards" className="grid grid-cols-2 gap-3 md:grid-cols-5">
         {data.counts.map(({ event, count }) => (
           <StatCard key={event} label={event} value={formatNumber(count)} />
         ))}
@@ -82,7 +82,7 @@ export default async function UsagePage({
         </button>
       </form>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div data-tour="usage-charts" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card title="Eventos por dia" subtitle="últimos 30 dias com dados (na amostra filtrada)">
           <BarList items={data.perDay} />
         </Card>

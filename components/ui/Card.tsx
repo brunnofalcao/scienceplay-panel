@@ -6,15 +6,19 @@ export function Card({
   action,
   children,
   className = "",
+  tourAnchor,
 }: {
   title?: string;
   subtitle?: string;
   action?: ReactNode;
   children: ReactNode;
   className?: string;
+  /** Marca o cartão como alvo do Tour Guiado (vira data-tour). */
+  tourAnchor?: string;
 }) {
   return (
     <section
+      data-tour={tourAnchor}
       className={`rounded-2xl border border-line bg-panel p-5 ${className}`}
     >
       {title ? (

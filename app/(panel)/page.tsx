@@ -67,10 +67,12 @@ export default async function DashboardPage() {
       </div>
       <QueryDegradation errors={data.errors} />
 
-      <AttentionRow items={attention} />
+      <div data-tour="attention">
+        <AttentionRow items={attention} />
+      </div>
 
       <SectionHeader>Usuários</SectionHeader>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div data-tour="users-metrics" className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="Total de usuários" value={formatNumber(data.users.total)} />
         <StatCard label="Novos (7d)" value={formatNumber(data.users.new7d)} tone="ok" />
         <StatCard label="Novos (30d)" value={formatNumber(data.users.new30d)} />
@@ -82,7 +84,7 @@ export default async function DashboardPage() {
       </div>
 
       <SectionHeader>Content Factory</SectionHeader>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div data-tour="content-factory" className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="NEWS geradas hoje" value={formatNumber(production.today)} />
         <StatCard label="NEWS geradas no mês" value={formatNumber(production.month)} />
         <StatCard
@@ -95,7 +97,7 @@ export default async function DashboardPage() {
           tone={production.possibleDuplicates > 0 ? "warn" : "default"}
         />
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div data-tour="cost" className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="Custo IA hoje" value={formatUsd(costs.totals.costToday)} />
         <StatCard label="Custo IA no mês" value={formatUsd(costs.totals.costMonth)} />
         <StatCard
@@ -125,6 +127,7 @@ export default async function DashboardPage() {
       <div className="flex flex-wrap gap-2 text-sm">
         <Link
           href="/production"
+          data-tour="produzir"
           className="rounded-lg bg-brand px-3 py-1.5 font-semibold text-white hover:bg-brand-strong"
         >
           Produzir NEWS
@@ -158,6 +161,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Seções secundárias recolhidas — a dobra fica no essencial */}
+      <div data-tour="collapsibles" className="space-y-6">
       <Collapsible title="Origem do conteúdo" hint="de onde vêm as NEWS">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <StatCard
@@ -239,6 +243,7 @@ export default async function DashboardPage() {
           </Card>
         </div>
       </Collapsible>
+      </div>
 
       <GuidedTour screen="Visão geral" sections={TOURS["Visão geral"]} />
     </>

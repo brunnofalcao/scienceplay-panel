@@ -68,7 +68,7 @@ export default async function AiLogsPage({
         <StatCard label="Custo estimado" value={formatUsd(totals.costUsd)} />
       </div>
 
-      <form method="get" className="flex flex-wrap items-end gap-2 text-sm">
+      <form data-tour="ailogs-filters" method="get" className="flex flex-wrap items-end gap-2 text-sm">
         <input name="provider" defaultValue={param(sp, "provider")} placeholder="Provider" className={inputClass} />
         <input name="model" defaultValue={param(sp, "model")} placeholder="Modelo" className={inputClass} />
         <input name="status" defaultValue={param(sp, "status")} placeholder="Status" className={inputClass} />
@@ -98,13 +98,14 @@ export default async function AiLogsPage({
               fallback: param(sp, "fallback"),
             }).filter(([, v]) => v),
           ).toString()}`}
+          data-tour="ailogs-export"
           className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:border-accent hover:text-ink"
         >
           Exportar CSV
         </a>
       </form>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div data-tour="ailogs-groups" className="grid gap-4 md:grid-cols-3">
         <Card title="Por dia" subtitle="chamadas e custo">
           <BarList
             items={groups.byDay.map((g) => ({

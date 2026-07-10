@@ -1,113 +1,170 @@
 import type { TourSection } from "@/components/ui/GuidedTour";
 
 /**
- * Conteúdo do Tour Guiado por tela. Linguagem direta: o que cada CTA, filtro
- * e bloco faz. Mantido centralizado para consistência.
+ * Conteúdo do Tour Guiado por tela. Cada passo aponta (anchor) para um elemento
+ * real via [data-tour="..."]; o tour destaca esse elemento na tela e explica o
+ * que ele faz. Passos sem anchor caem num card central (fallback).
  */
 export const TOURS: Record<string, TourSection[]> = {
   "Visão geral": [
     {
-      title: "Precisa de atenção",
+      title: "Onde agir primeiro",
       steps: [
-        { target: "Faixa no topo", what: "Lista só o que exige ação agora: NEWS aguardando revisão, possíveis duplicados e erros de IA. Clique no item para ir direto onde se resolve." },
+        {
+          anchor: '[data-tour="attention"]',
+          title: "Precisa de atenção",
+          what: "A faixa do topo lista só o que exige ação agora: NEWS aguardando revisão, possíveis duplicados e erros de IA. Clique no item para ir direto onde se resolve.",
+        },
       ],
     },
     {
-      title: "Blocos de métrica",
+      title: "Métricas",
       steps: [
-        { target: "Usuários", what: "Base total, novos em 7/30 dias e ativos (com evento de uso no período)." },
-        { target: "Content Factory", what: "Produção de NEWS (hoje/mês), auto-publicadas, fila de duplicados e custo de IA." },
-        { target: "Custo médio por NEWS", what: "Exato quando o motor grava a atribuição; senão mostra 'aguardando dados' (sem fingir)." },
+        {
+          anchor: '[data-tour="users-metrics"]',
+          title: "Usuários",
+          what: "Base total, novos em 7 e 30 dias, e ativos (com evento de uso no período).",
+        },
+        {
+          anchor: '[data-tour="content-factory"]',
+          title: "Content Factory",
+          what: "Produção de NEWS hoje e no mês, auto-publicadas e fila de duplicados.",
+        },
+        {
+          anchor: '[data-tour="cost"]',
+          title: "Custo de IA",
+          what: "Custo hoje/mês e o custo médio por NEWS — exato quando o motor grava a atribuição; senão mostra 'aguardando dados' (sem fingir).",
+        },
       ],
     },
     {
       title: "Ações rápidas",
       steps: [
-        { target: "Produzir NEWS", what: "Abre a Produção de NEWS: capturar estudos e gerar por grau, tema ou lote." },
-        { target: "Fila / Diária / Custos", what: "Atalhos para a fila editorial, a visão do motor diário e a análise de custos." },
-        { target: "Ver detalhes", what: "As seções secundárias (origem, produto & IA, rankings) ficam recolhidas — expanda quando precisar." },
+        {
+          anchor: '[data-tour="produzir"]',
+          title: "Produzir NEWS",
+          what: "Abre a Produção de NEWS: capturar estudos e gerar por grau, tema ou lote.",
+        },
+        {
+          anchor: '[data-tour="collapsibles"]',
+          title: "Seções secundárias",
+          what: "Origem, produto & IA e rankings ficam recolhidos aqui — clique em 'Ver detalhes' para expandir quando precisar.",
+        },
       ],
     },
   ],
 
   "Produção de NEWS": [
     {
-      title: "Capturar estudos novos",
+      title: "Capturar",
       steps: [
-        { target: "Janela / Fonte", what: "Período de busca no PubMed e a fonte. Sem gastar IA — só descobre e enfileira candidatos." },
-        { target: "Tema/eixo e Área", what: "Opcionais. Tema livre (em inglês) busca por assunto; senão usa as trilhas do tema central." },
-        { target: "Capturar", what: "Enfileira os estudos em 'Fila de Produção' com status 'capturado'." },
+        {
+          anchor: '[data-tour="capturar"]',
+          title: "Capturar estudos novos",
+          what: "Busca no PubMed/CrossRef pela janela e fonte escolhidas e enfileira candidatos. Não gasta IA — só descobre e enfileira.",
+        },
       ],
     },
     {
-      title: "Gerar NEWS",
+      title: "Gerar",
       steps: [
-        { target: "Por grau de evidência", what: "Gera e publica só o que atinge o grau escolhido (D nunca auto-publica). Consome IA." },
-        { target: "Gerar lote", what: "Processa os candidatos capturados. Dedup e piso de qualidade continuam valendo." },
-        { target: "Por tema", what: "Descobre e gera por assunto. Digite em inglês (a literatura é indexada em inglês)." },
-        { target: "Publicar automaticamente", what: "'Não' deixa em revisão para você aprovar; 'Sim' publica direto o que passar no piso." },
+        {
+          anchor: '[data-tour="grade"]',
+          title: "Gerar por grau de evidência",
+          what: "Gera e publica só o que atinge o grau escolhido (D nunca auto-publica). 'Publicar automaticamente = Não' deixa em revisão. Consome IA.",
+        },
+        {
+          anchor: '[data-tour="batch"]',
+          title: "Gerar lote",
+          what: "Processa os candidatos já capturados. Dedup e piso de qualidade continuam valendo.",
+        },
+        {
+          anchor: '[data-tour="theme"]',
+          title: "Gerar por tema",
+          what: "Descobre e gera por assunto. Digite em inglês (a literatura é indexada em inglês).",
+        },
       ],
     },
   ],
 
   "Custos de IA": [
     {
-      title: "Cartões de topo",
+      title: "Leitura rápida",
       steps: [
-        { target: "Custo hoje / mês / total", what: "Somatório de ai_logs em horário de Brasília. 'Total' é sobre a amostra carregada." },
-        { target: "Custo E2A / Studio", what: "Estimado por nome de feature (heurística), não exato." },
-      ],
-    },
-    {
-      title: "Filtros",
-      steps: [
-        { target: "Datas / Feature / Plano / Provider / Modelo / Status", what: "Recortam a amostra. 'Só erros' isola chamadas que falharam." },
-        { target: "Filtrar", what: "Aplica os filtros a todos os gráficos e à tabela abaixo." },
-      ],
-    },
-    {
-      title: "Quebras",
-      steps: [
-        { target: "Custo por NEWS (exato)", what: "Aparece quando há gerações com atribuição (entity_id). Custo real por artigo." },
-        { target: "Por usuário / plano / feature / provider / modelo / dia", what: "Barras ordenadas por custo, com o valor à direita." },
+        {
+          anchor: '[data-tour="cost-totals"]',
+          title: "Cartões de topo",
+          what: "Custo hoje, no mês, total da amostra e médio por chamada — em horário de Brasília.",
+        },
+        {
+          anchor: '[data-tour="cost-filters"]',
+          title: "Filtros",
+          what: "Recortam a amostra por data, feature, plano, provider, modelo, status. 'Só erros' isola chamadas que falharam. Aplica a todos os gráficos e à tabela.",
+        },
+        {
+          anchor: '[data-tour="cost-breakdowns"]',
+          title: "Quebras de custo",
+          what: "Custo por NEWS (exato, quando há atribuição), por usuário, plano, feature, provider, modelo e dia — barra proporcional ao custo, valor à direita.",
+        },
       ],
     },
   ],
 
   "NEWS": [
     {
-      title: "Cartões de topo",
+      title: "Acervo",
       steps: [
-        { target: "Publicadas / A+B / C / D / Duplicadas", what: "Distribuição do acervo por status e grau de evidência." },
-        { target: "Geradas no mês / Custo IA", what: "Ritmo de produção e custo de IA do mês corrente." },
-      ],
-    },
-    {
-      title: "Filtros e ações",
-      steps: [
-        { target: "Busca / Status / Origem / Tipo / GRADE / DOI / PMID / Área / Tag / Usuário", what: "Combine para achar exatamente a NEWS. Data e 'auto-publicado' também filtram." },
-        { target: "Ações por linha", what: "Publicar, rejeitar ou marcar duplicado — toda ação grava em admin_audit_logs." },
+        {
+          anchor: '[data-tour="news-stats"]',
+          title: "Cartões de topo",
+          what: "Distribuição do acervo por status e grau, mais ritmo de produção e custo de IA do mês.",
+        },
+        {
+          anchor: '[data-tour="news-filters"]',
+          title: "Filtros",
+          what: "Combine busca, status, origem, tipo, GRADE, DOI/PMID, área, tag, usuário e data para achar exatamente a NEWS.",
+        },
+        {
+          anchor: '[data-tour="news-table"]',
+          title: "Ações por linha",
+          what: "Publicar, rejeitar, arquivar ou marcar duplicado — toda ação grava em admin_audit_logs. Conteúdo mock não pode ser publicado.",
+        },
       ],
     },
   ],
 
   "Usuários": [
     {
-      title: "Lista",
+      title: "Base de usuários",
       steps: [
-        { target: "Busca / Profissão / Especialidade / Plano / Role / Atividade", what: "Filtram a base. 'Atividade' separa ativos de inativos." },
-        { target: "Ordenar", what: "Por mais ativos, recentes, mais NEWS, mais E2A/Studio ou mais limites atingidos." },
-        { target: "Abrir um usuário", what: "Perfil completo: consumo, produção, E2A, Studio, custo de IA e sinais de intenção." },
+        {
+          anchor: '[data-tour="users-filters"]',
+          title: "Filtros e ordenação",
+          what: "Filtre por profissão, especialidade, plano, role e atividade; ordene por mais ativos, recentes, mais NEWS, E2A/Studio ou limites atingidos.",
+        },
+        {
+          anchor: '[data-tour="users-table"]',
+          title: "Abrir um usuário",
+          what: "Clique no nome para o perfil completo: consumo, produção, E2A, Studio, custo de IA e sinais de intenção.",
+        },
       ],
     },
   ],
 
   "Fila de Produção": [
     {
-      title: "Blocos",
+      title: "Fila",
       steps: [
-        { target: "Candidatos capturados", what: "Estudos enfileirados pela captura, aguardando geração." },
-        { target: "Fila editorial", what: "NEWS em geradas/revisão/duplicado/rascunho. Aja por linha — tudo auditado." },
+        {
+          anchor: '[data-tour="queue-candidates"]',
+          title: "Candidatos capturados",
+          what: "Estudos enfileirados pela captura, aguardando geração.",
+        },
+        {
+          anchor: '[data-tour="queue-editorial"]',
+          title: "Fila editorial",
+          what: "NEWS em geradas/revisão/duplicado/rascunho. Aja por linha — tudo auditado.",
+        },
       ],
     },
   ],
@@ -116,19 +173,39 @@ export const TOURS: Record<string, TourSection[]> = {
     {
       title: "Motor diário",
       steps: [
-        { target: "Rodar motor diário agora", what: "Dispara a geração no SITE (publica NEWS reais). Pode levar minutos; é auditado." },
-        { target: "Histórico de execuções", what: "Cada rodada do cron das 06:30 com publicadas/descobertas/dedup/não resolvidas/erros." },
+        {
+          anchor: '[data-tour="daily-engine"]',
+          title: "Rodar motor diário agora",
+          what: "Dispara a geração no SITE (publica NEWS reais). Roda sozinho às 06:30 BRT; o disparo manual é auditado e pode levar minutos.",
+        },
+        {
+          anchor: '[data-tour="daily-history"]',
+          title: "Histórico de execuções",
+          what: "Cada rodada com publicadas/descobertas/dedup/revisão/não resolvidas/erros.",
+        },
       ],
     },
   ],
 
   "AI Logs": [
     {
-      title: "Uso",
+      title: "Telemetria",
       steps: [
-        { target: "Filtros (provider/modelo/status/feature)", what: "Recortam os logs técnicos. 'Só erros' e 'só failover' isolam problemas." },
-        { target: "Exportar CSV", what: "Baixa a amostra filtrada (sem prompt bruto, sem chaves)." },
-        { target: "Agrupamentos", what: "Por dia, feature e provider/modelo — chamadas e custo lado a lado." },
+        {
+          anchor: '[data-tour="ailogs-filters"]',
+          title: "Filtros",
+          what: "Recortam os logs por provider, modelo, status e feature. 'Só erros' e 'só failover' isolam problemas.",
+        },
+        {
+          anchor: '[data-tour="ailogs-export"]',
+          title: "Exportar CSV",
+          what: "Baixa a amostra filtrada — sem prompt bruto, sem chaves.",
+        },
+        {
+          anchor: '[data-tour="ailogs-groups"]',
+          title: "Agrupamentos",
+          what: "Por dia, feature e provider/modelo — chamadas e custo lado a lado.",
+        },
       ],
     },
   ],
@@ -137,8 +214,16 @@ export const TOURS: Record<string, TourSection[]> = {
     {
       title: "Eventos",
       steps: [
-        { target: "Cartões por evento", what: "Só os eventos REAIS emitidos hoje (e2a_used, studio_used, etc.)." },
-        { target: "Filtros e quebras", what: "Por usuário, evento e data; e visões por plano, profissão e formato." },
+        {
+          anchor: '[data-tour="usage-cards"]',
+          title: "Cartões por evento",
+          what: "Só os eventos REAIS emitidos hoje (e2a_used, studio_used, etc.).",
+        },
+        {
+          anchor: '[data-tour="usage-charts"]',
+          title: "Filtros e quebras",
+          what: "Por usuário, evento e data; e visões por plano, profissão e formato.",
+        },
       ],
     },
   ],

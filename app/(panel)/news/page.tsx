@@ -75,7 +75,7 @@ export default async function NewsPage({
       </div>
       <QueryDegradation errors={[...errors, ...stats.errors]} />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
+      <div data-tour="news-stats" className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
         <StatCard label="Publicadas" value={formatNumber(stats.published)} tone="ok" />
         <StatCard label="GRADE A + B" value={formatNumber(stats.gradeAB)} />
         <StatCard label="GRADE C" value={formatNumber(stats.gradeC)} />
@@ -89,7 +89,7 @@ export default async function NewsPage({
         <StatCard label="Custo IA no mês" value={formatUsd(stats.aiCostMonth)} />
       </div>
 
-      <form method="get" className="flex flex-wrap items-end gap-2 text-sm">
+      <form data-tour="news-filters" method="get" className="flex flex-wrap items-end gap-2 text-sm">
         <input
           name="q"
           defaultValue={param(sp, "q")}
@@ -185,6 +185,7 @@ export default async function NewsPage({
       {items.length === 0 ? (
         <EmptyState message="Nenhuma NEWS encontrada com estes filtros." />
       ) : (
+        <div data-tour="news-table">
         <Table
           head={[
             "Título",
@@ -224,6 +225,7 @@ export default async function NewsPage({
             </tr>
           ))}
         </Table>
+        </div>
       )}
       <GuidedTour screen="NEWS" sections={TOURS["NEWS"]} />
     </>

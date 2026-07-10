@@ -88,7 +88,7 @@ export default async function UsersPage({
       </h1>
       <QueryDegradation errors={errors} />
 
-      <form method="get" className="flex flex-wrap items-end gap-2 text-sm">
+      <form data-tour="users-filters" method="get" className="flex flex-wrap items-end gap-2 text-sm">
         <input
           name="q"
           defaultValue={param(sp, "q")}
@@ -148,6 +148,7 @@ export default async function UsersPage({
       {filtered.length === 0 ? (
         <EmptyState message="Nenhum usuário encontrado com estes filtros." />
       ) : (
+        <div data-tour="users-table">
         <Table
           head={[
             "Usuário",
@@ -191,6 +192,7 @@ export default async function UsersPage({
             </tr>
           ))}
         </Table>
+        </div>
       )}
       <GuidedTour screen="Usuários" sections={TOURS["Usuários"]} />
     </>
