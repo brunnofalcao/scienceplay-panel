@@ -3,8 +3,9 @@ import { requireAdmin } from "@/lib/admin/guard";
 import { fetchAiLogs } from "@/lib/admin/queries";
 import { getPanelDb } from "@/lib/db/panel";
 import { formatDateTime, formatMs, formatNumber, formatUsd } from "@/lib/formatters";
+import { BarList } from "@/components/charts/BarList";
 import { Table, Td } from "@/components/tables/Table";
-import { StatCard } from "@/components/ui/Card";
+import { Card, StatCard } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
@@ -28,7 +29,7 @@ export default async function AiLogsPage({
   if (!panel) return <NotConfigured />;
 
   const sp = await searchParams;
-  const { items, totals, errors } = await fetchAiLogs(panel.db, {
+  const { items, totals, groups, errors } = await fetchAiLogs(panel.db, {
     provider: param(sp, "provider") || undefined,
     model: param(sp, "model") || undefined,
     status: param(sp, "status") || undefined,
@@ -83,7 +84,49 @@ export default async function AiLogsPage({
         >
           Filtrar
         </button>
+        <a
+          href={`/ai-logs/export?${new URLSearchParams(
+            Object.entries({
+              provider: param(sp, "provider"),
+              model: param(sp, "model"),
+              status: param(sp, "status"),
+              feature: param(sp, "feature"),
+              errors: param(sp, "errors"),
+              fallback: param(sp, "fallback"),
+            }).filter(([, v]) => v),
+          ).toString()}`}
+          className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:border-accent hover:text-ink"
+        >
+          Exportar CSV
+        </a>
       </form>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card title="Por dia" subtitle="chamadas · custo">
+          <BarList
+            items={groups.byDay.map((g) => ({
+              name: `${g.name} · ${formatUsd(g.costUsd)}`,
+              count: g.count,
+            }))}
+          />
+        </Card>
+        <Card title="Por feature">
+          <BarList
+            items={groups.byFeature.map((g) => ({
+              name: `${g.name} · ${formatUsd(g.costUsd)}`,
+              count: g.count,
+            }))}
+          />
+        </Card>
+        <Card title="Por provider/modelo">
+          <BarList
+            items={groups.byProviderModel.map((g) => ({
+              name: `${g.name} · ${formatUsd(g.costUsd)}`,
+              count: g.count,
+            }))}
+          />
+        </Card>
+      </div>
 
       {items.length === 0 ? (
         <EmptyState message="Nenhum log de IA encontrado." />

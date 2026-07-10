@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/guard";
-import { fetchNewsList } from "@/lib/admin/queries";
+import { fetchNewsList, fetchNewsStats } from "@/lib/admin/queries";
 import { getPanelDb } from "@/lib/db/panel";
-import { formatDateTime, formatNumber, truncate } from "@/lib/formatters";
+import { formatDateTime, formatNumber, formatUsd, truncate } from "@/lib/formatters";
 import {
   CONTENT_TYPES,
   EDITORIAL_STATUSES,
@@ -13,6 +13,7 @@ import {
 import { NewsActions } from "@/components/admin/NewsActions";
 import { Table, Td } from "@/components/tables/Table";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { StatCard } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { NotConfigured, ServiceRoleMissing } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
@@ -36,19 +37,25 @@ export default async function NewsPage({
   if (!panel) return <NotConfigured />;
 
   const sp = await searchParams;
-  const { items, errors } = await fetchNewsList(panel.db, {
-    q: param(sp, "q") || undefined,
-    status: param(sp, "status") || undefined,
-    origin: param(sp, "origin") || undefined,
-    contentType: param(sp, "type") || undefined,
-    grade: param(sp, "grade") || undefined,
-    autoPublished: param(sp, "auto") || undefined,
-    doi: param(sp, "doi") || undefined,
-    pmid: param(sp, "pmid") || undefined,
-    from: param(sp, "from") || undefined,
-    to: param(sp, "to") || undefined,
-    duplicatesOnly: param(sp, "dup") === "true",
-  });
+  const [{ items, errors }, stats] = await Promise.all([
+    fetchNewsList(panel.db, {
+      q: param(sp, "q") || undefined,
+      status: param(sp, "status") || undefined,
+      origin: param(sp, "origin") || undefined,
+      contentType: param(sp, "type") || undefined,
+      grade: param(sp, "grade") || undefined,
+      autoPublished: param(sp, "auto") || undefined,
+      doi: param(sp, "doi") || undefined,
+      pmid: param(sp, "pmid") || undefined,
+      area: param(sp, "area") || undefined,
+      tag: param(sp, "tag") || undefined,
+      userEmail: param(sp, "user") || undefined,
+      from: param(sp, "from") || undefined,
+      to: param(sp, "to") || undefined,
+      duplicatesOnly: param(sp, "dup") === "true",
+    }),
+    fetchNewsStats(panel.db),
+  ]);
 
   const selectClass =
     "rounded-lg border border-line bg-panel-2 px-2 py-1.5 outline-none focus:border-accent";
@@ -64,7 +71,21 @@ export default async function NewsPage({
         </h1>
         {!panel.serviceRole ? <ServiceRoleMissing /> : null}
       </div>
-      <QueryDegradation errors={errors} />
+      <QueryDegradation errors={[...errors, ...stats.errors]} />
+
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-7">
+        <StatCard label="Publicadas" value={formatNumber(stats.published)} tone="ok" />
+        <StatCard label="GRADE A + B" value={formatNumber(stats.gradeAB)} />
+        <StatCard label="GRADE C" value={formatNumber(stats.gradeC)} />
+        <StatCard label="GRADE D" value={formatNumber(stats.gradeD)} />
+        <StatCard
+          label="Possíveis duplicadas"
+          value={formatNumber(stats.possibleDuplicates)}
+          tone={stats.possibleDuplicates > 0 ? "warn" : "default"}
+        />
+        <StatCard label="Geradas no mês" value={formatNumber(stats.generatedMonth)} />
+        <StatCard label="Custo IA no mês" value={formatUsd(stats.aiCostMonth)} />
+      </div>
 
       <form method="get" className="flex flex-wrap items-end gap-2 text-sm">
         <input
@@ -121,6 +142,24 @@ export default async function NewsPage({
           defaultValue={param(sp, "pmid")}
           placeholder="PMID"
           className="w-28 rounded-lg border border-line bg-panel-2 px-3 py-1.5 outline-none focus:border-accent"
+        />
+        <input
+          name="area"
+          defaultValue={param(sp, "area")}
+          placeholder="Área"
+          className="w-28 rounded-lg border border-line bg-panel-2 px-3 py-1.5 outline-none focus:border-accent"
+        />
+        <input
+          name="tag"
+          defaultValue={param(sp, "tag")}
+          placeholder="Tag"
+          className="w-28 rounded-lg border border-line bg-panel-2 px-3 py-1.5 outline-none focus:border-accent"
+        />
+        <input
+          name="user"
+          defaultValue={param(sp, "user")}
+          placeholder="E-mail do usuário"
+          className="w-44 rounded-lg border border-line bg-panel-2 px-3 py-1.5 outline-none focus:border-accent"
         />
         <input
           type="date"

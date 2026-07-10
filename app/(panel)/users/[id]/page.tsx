@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/guard";
 import { fetchUserDetail } from "@/lib/admin/user-detail";
 import { getPanelDb } from "@/lib/db/panel";
-import { formatDateTime, formatNumber } from "@/lib/formatters";
+import { formatDateTime, formatNumber, formatUsd } from "@/lib/formatters";
 import { BarList } from "@/components/charts/BarList";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Card, StatCard } from "@/components/ui/Card";
@@ -28,8 +28,19 @@ export default async function UserDetailPage({
   const detail = await fetchUserDetail(panel.db, id);
   if (!detail) notFound();
 
-  const { user, stats, signals, submittedItems, consumption, e2a, studio, timeline } =
-    detail;
+  const {
+    user,
+    stats,
+    signals,
+    submittedItems,
+    consumption,
+    e2a,
+    studio,
+    aiCost,
+    timeline,
+  } = detail;
+  const isFreePlan = /free/i.test(user.plan);
+  const highUsage = aiCost.monthUsd >= 1;
 
   return (
     <>
@@ -192,6 +203,60 @@ export default async function UserDetailPage({
           </div>
         </Card>
       </div>
+
+      <Card
+        title="Custo e uso de IA"
+        subtitle="atribuído via ai_logs.user_id · valores em USD · horário de Brasília"
+      >
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <StatCard label="Custo total" value={formatUsd(aiCost.totalUsd)} />
+          <StatCard label="Custo no mês" value={formatUsd(aiCost.monthUsd)} />
+          <StatCard label="Chamadas de IA" value={formatNumber(aiCost.calls)} />
+          <StatCard
+            label="Erros de IA"
+            value={formatNumber(aiCost.errors)}
+            tone={aiCost.errors > 0 ? "danger" : "ok"}
+          />
+        </div>
+        <div className="mt-3 grid gap-4 md:grid-cols-2">
+          <div>
+            <p className="mb-2 text-xs text-muted">Custo por feature</p>
+            <BarList
+              items={aiCost.byFeature.slice(0, 8).map((b) => ({
+                name: `${b.name} · ${formatUsd(b.costUsd)}`,
+                count: b.count,
+              }))}
+              emptyMessage="Nenhuma chamada de IA deste usuário."
+            />
+          </div>
+          <div className="space-y-2 text-sm">
+            <p>
+              <span className="text-muted">Modelo mais usado:</span>{" "}
+              <span className="font-mono text-xs">{aiCost.topModel ?? "—"}</span>
+            </p>
+            <p>
+              <span className="text-muted">Última chamada:</span>{" "}
+              {formatDateTime(aiCost.lastCall)}
+            </p>
+            <p>
+              <span className="text-muted">Plano:</span> {user.plan}
+            </p>
+            {!isFreePlan && user.plan !== "—" ? (
+              <p
+                className={`rounded-lg border px-3 py-2 text-xs ${
+                  highUsage
+                    ? "border-warn/40 bg-warn/10 text-warn"
+                    : "border-ok/40 bg-ok/10 text-ok"
+                }`}
+              >
+                {highUsage
+                  ? `Uso de IA elevado no mês (${formatUsd(aiCost.monthUsd)}) — acompanhar risco de uso excessivo.`
+                  : "Uso de IA dentro do esperado para o plano."}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      </Card>
 
       <Card title="Timeline" subtitle="últimos 100 eventos (usage_events)">
         {timeline.length === 0 ? (

@@ -1,4 +1,7 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/guard";
+import { fetchCostAnalytics } from "@/lib/admin/costs";
+import { fetchProductionOverview } from "@/lib/admin/production";
 import { getDashboardData } from "@/lib/admin/queries";
 import { getPanelDb } from "@/lib/db/panel";
 import { formatNumber, formatUsd } from "@/lib/formatters";
@@ -14,7 +17,11 @@ export default async function DashboardPage() {
   const panel = await getPanelDb();
   if (!panel) return <NotConfigured />;
 
-  const data = await getDashboardData(panel.db);
+  const [data, production, costs] = await Promise.all([
+    getDashboardData(panel.db),
+    fetchProductionOverview(panel.db),
+    fetchCostAnalytics(panel.db),
+  ]);
   const limitsTotal =
     data.usage.limitsHit.news + data.usage.limitsHit.e2a + data.usage.limitsHit.studio;
 
@@ -36,6 +43,56 @@ export default async function DashboardPage() {
           value={formatNumber(data.users.active30d)}
           hint="com usage_events no período"
         />
+      </div>
+
+      <h2 className="pt-2 text-xs uppercase tracking-widest text-muted">
+        Content Factory
+      </h2>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <StatCard label="NEWS geradas hoje" value={formatNumber(production.today)} />
+        <StatCard label="NEWS geradas no mês" value={formatNumber(production.month)} />
+        <StatCard
+          label="Auto-publicadas no mês"
+          value={formatNumber(production.autoPublishedMonth)}
+        />
+        <StatCard
+          label="Fila de duplicados"
+          value={formatNumber(production.possibleDuplicates)}
+          tone={production.possibleDuplicates > 0 ? "warn" : "default"}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <StatCard label="Custo IA hoje" value={formatUsd(costs.totals.costToday)} />
+        <StatCard label="Custo IA no mês" value={formatUsd(costs.totals.costMonth)} />
+        <StatCard
+          label="Custo médio por NEWS"
+          value="não rastreável"
+          hint="ai_logs sem vínculo com NEWS — ver contrato de atribuição"
+        />
+        <StatCard
+          label="Custo médio por usuário"
+          value={formatUsd(
+            costs.byUser.length ? costs.totals.costSample / costs.byUser.length : 0,
+          )}
+          hint={`${formatNumber(costs.byUser.length)} usuários com uso de IA`}
+        />
+      </div>
+      <div className="flex flex-wrap gap-2 text-sm">
+        <Link
+          href="/production"
+          className="rounded-lg bg-brand px-3 py-1.5 font-semibold text-white hover:bg-brand-strong"
+        >
+          Produzir NEWS
+        </Link>
+        <Link href="/production/queue" className="rounded-lg border border-line px-3 py-1.5 hover:border-accent">
+          Fila de Produção
+        </Link>
+        <Link href="/production/daily" className="rounded-lg border border-line px-3 py-1.5 hover:border-accent">
+          Produção Diária
+        </Link>
+        <Link href="/production/costs" className="rounded-lg border border-line px-3 py-1.5 hover:border-accent">
+          Custos de IA
+        </Link>
       </div>
 
       <h2 className="pt-2 text-xs uppercase tracking-widest text-muted">Editorial</h2>

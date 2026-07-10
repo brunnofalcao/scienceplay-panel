@@ -84,6 +84,9 @@ export default async function UsagePage({
         <Card title="Eventos por dia" subtitle="últimos 30 dias com dados (na amostra filtrada)">
           <BarList items={data.perDay} />
         </Card>
+        <Card title="Eventos por plano">
+          <BarList items={data.byPlan} />
+        </Card>
         <Card title="Top usuários">
           <BarList items={data.topUsers} />
         </Card>

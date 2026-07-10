@@ -10,6 +10,7 @@ import {
   hasServiceRole,
   isSupabaseConfigured,
 } from "@/lib/supabase/env";
+import { hasSiteInternalSecret } from "@/lib/site/internal";
 import { Card } from "@/components/ui/Card";
 import { NotConfigured } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
@@ -97,6 +98,11 @@ export default async function SettingsPage() {
             label="SUPABASE_SERVICE_ROLE_KEY (server-only)"
             value={hasServiceRole() ? "presente" : "ausente"}
             ok={hasServiceRole()}
+          />
+          <Row
+            label="SITE_INTERNAL_API_SECRET (server-only)"
+            value={hasSiteInternalSecret() ? "presente" : "ausente"}
+            ok={hasSiteInternalSecret()}
           />
         </Card>
 

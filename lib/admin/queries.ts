@@ -1,7 +1,12 @@
 import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { pickBoolean, pickNumber, pickString } from "@/lib/formatters";
+import {
+  pickBoolean,
+  pickNumber,
+  pickString,
+  spMonthStartIso,
+} from "@/lib/formatters";
 import {
   REAL_USAGE_EVENTS,
   type GenericRow,
@@ -13,7 +18,7 @@ type Db = SupabaseClient;
 /** Coleta um erro por tabela sem derrubar a página — degradação honesta. */
 export type QueryErrors = string[];
 
-async function safeCount(
+export async function safeCount(
   db: Db,
   table: string,
   errors: QueryErrors,
@@ -351,6 +356,9 @@ export interface NewsListFilters {
   doi?: string;
   pmid?: string;
   userId?: string;
+  userEmail?: string;
+  area?: string;
+  tag?: string;
   from?: string;
   to?: string;
   duplicatesOnly?: boolean;
@@ -399,6 +407,54 @@ export async function fetchNewsList(
     if (idFilter.length === 0) return { items: [], errors };
   }
 
+  // Filtro por tag: tags.name → news_tags → news_ids (interseção com busca)
+  if (filters.tag) {
+    const tagRows = await safeSelect(
+      db,
+      "tags",
+      "id",
+      errors,
+      (q) =>
+        (q as { ilike: (c: string, v: string) => unknown }).ilike(
+          "name",
+          `%${filters.tag}%`,
+        ),
+      20,
+    );
+    const tagIds = tagRows.map((r) => String(r.id));
+    if (tagIds.length === 0) return { items: [], errors };
+    const newsTagRows = await safeSelect(
+      db,
+      "news_tags",
+      "news_id",
+      errors,
+      (q) => (q as { in: (c: string, v: string[]) => unknown }).in("tag_id", tagIds),
+      500,
+    );
+    const tagged = newsTagRows.map((r) => String(r.news_id));
+    idFilter = idFilter ? idFilter.filter((id) => tagged.includes(id)) : tagged;
+    if (idFilter.length === 0) return { items: [], errors };
+  }
+
+  // Filtro por e-mail do usuário que enviou
+  let creatorFilter: string[] | null = null;
+  if (filters.userEmail) {
+    const userRows = await safeSelect(
+      db,
+      "users",
+      "id",
+      errors,
+      (q) =>
+        (q as { ilike: (c: string, v: string) => unknown }).ilike(
+          "email",
+          `%${filters.userEmail}%`,
+        ),
+      20,
+    );
+    creatorFilter = userRows.map((r) => String(r.id));
+    if (creatorFilter.length === 0) return { items: [], errors };
+  }
+
   let sourceIdFilter: string[] | null = null;
   if (filters.doi || filters.pmid) {
     const column = filters.doi ? "doi" : "pmid";
@@ -440,6 +496,12 @@ export async function fetchNewsList(
       if (filters.autoPublished === "true") query = query.eq("auto_published", true);
       if (filters.autoPublished === "false") query = query.eq("auto_published", false);
       if (filters.userId) query = query.eq("created_by", filters.userId);
+      if (filters.area) {
+        query = (
+          query as unknown as { ilike: (c: string, v: string) => typeof query }
+        ).ilike("area", `%${filters.area}%`);
+      }
+      if (creatorFilter) query = query.in("created_by", creatorFilter);
       if (filters.from) query = query.gte("created_at", filters.from);
       if (filters.to) query = query.lte("created_at", `${filters.to}T23:59:59`);
       if (idFilter) query = query.in("id", idFilter);
@@ -621,6 +683,62 @@ export async function fetchNewsDetail(db: Db, id: string) {
   };
 }
 
+// ---- Cards executivos do acervo (/news) ----
+
+export interface NewsStats {
+  published: number;
+  gradeAB: number;
+  gradeC: number;
+  gradeD: number;
+  possibleDuplicates: number;
+  generatedMonth: number;
+  aiCostMonth: number;
+  errors: QueryErrors;
+}
+
+export async function fetchNewsStats(db: Db): Promise<NewsStats> {
+  const errors: QueryErrors = [];
+  const monthStart = spMonthStartIso();
+  const eq =
+    (column: string, value: string) => (q: unknown) =>
+      (q as { eq: (c: string, v: unknown) => unknown }).eq(column, value);
+
+  const [published, gradeA, gradeB, gradeC, gradeD, possibleDup, generatedMonth, costRows] =
+    await Promise.all([
+      safeCount(db, "news_reviews", errors, eq("status", "published")),
+      safeCount(db, "news_reviews", errors, eq("evidence_grade", "A")),
+      safeCount(db, "news_reviews", errors, eq("evidence_grade", "B")),
+      safeCount(db, "news_reviews", errors, eq("evidence_grade", "C")),
+      safeCount(db, "news_reviews", errors, eq("evidence_grade", "D")),
+      safeCount(db, "news_reviews", errors, eq("status", "possible_duplicate")),
+      safeCount(db, "news_reviews", errors, (q) =>
+        (q as { gte: (c: string, v: string) => unknown }).gte("created_at", monthStart),
+      ),
+      safeSelect(
+        db,
+        "ai_logs",
+        "cost_usd, created_at",
+        errors,
+        (q) => (q as { gte: (c: string, v: string) => unknown }).gte("created_at", monthStart),
+        5000,
+      ),
+    ]);
+
+  return {
+    published,
+    gradeAB: gradeA + gradeB,
+    gradeC,
+    gradeD,
+    possibleDuplicates: possibleDup,
+    generatedMonth,
+    aiCostMonth: costRows.reduce(
+      (sum, r) => sum + (pickNumber(r, ["cost_usd"]) ?? 0),
+      0,
+    ),
+    errors,
+  };
+}
+
 // ---------------------------------------------------------------- Duplicados
 
 export async function fetchDuplicatesQueue(db: Db) {
@@ -711,12 +829,28 @@ export async function fetchUsageData(db: Db, filters: UsageFilters) {
     userRows.map((r) => [String(r.id), pickString(r, ["email", "name"]) ?? String(r.id)]),
   );
 
+  // Visão por plano: user_id → plan_id → nome do plano
+  const planRows = await safeSelect(db, "plans", "id, name, key", errors, undefined, 20);
+  const planNameById = new Map(
+    planRows.map((r) => [String(r.id), pickString(r, ["name", "key"]) ?? "—"]),
+  );
+  const planByUserId = new Map(
+    userRows.map((r) => {
+      const planId = pickString(r, ["plan_id"]);
+      return [String(r.id), (planId && planNameById.get(planId)) ?? "sem plano"];
+    }),
+  );
+
   const perDay = countBy(recent, (r) => r.created_at?.slice(0, 10) ?? null)
     .sort((a, b) => a.name.localeCompare(b.name))
     .slice(-30);
 
   const topUsers = countBy(recent, (r) =>
     r.user_id ? (userById.get(String(r.user_id)) ?? String(r.user_id)) : null,
+  ).slice(0, 10);
+
+  const byPlan = countBy(recent, (r) =>
+    r.user_id ? (planByUserId.get(String(r.user_id)) ?? "sem plano") : "anônimo",
   ).slice(0, 10);
 
   const topProfessions = countBy(recent, (r) =>
@@ -741,6 +875,7 @@ export async function fetchUsageData(db: Db, filters: UsageFilters) {
     userById,
     perDay,
     topUsers,
+    byPlan,
     topProfessions,
     topFormats,
     limitsHit,
@@ -841,7 +976,30 @@ export async function fetchAiLogs(db: Db, filters: AiLogFilters) {
     costUsd: items.reduce((sum, i) => sum + (i.costUsd ?? 0), 0),
   };
 
-  return { items: items.slice(0, 200), totals, errors };
+  const groupWithCost = (key: (i: AiLogItem) => string | null) => {
+    const map = new Map<string, { count: number; costUsd: number }>();
+    for (const item of items) {
+      const k = key(item);
+      if (!k) continue;
+      const entry = map.get(k) ?? { count: 0, costUsd: 0 };
+      entry.count += 1;
+      entry.costUsd += item.costUsd ?? 0;
+      map.set(k, entry);
+    }
+    return [...map.entries()]
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.count - a.count);
+  };
+
+  const groups = {
+    byDay: groupWithCost((i) => i.createdAt?.slice(0, 10) ?? null)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .slice(-30),
+    byFeature: groupWithCost((i) => i.feature).slice(0, 10),
+    byProviderModel: groupWithCost((i) => `${i.provider} / ${i.model}`).slice(0, 10),
+  };
+
+  return { items: items.slice(0, 200), allItems: items, totals, groups, errors };
 }
 
 // ---------------------------------------------------------------- Cron

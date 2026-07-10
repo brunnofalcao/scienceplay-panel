@@ -4,11 +4,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   countBy,
   enrichNewsRows,
+  mapAiLog,
   safeSelect,
   type QueryErrors,
 } from "@/lib/admin/queries";
 import { commercialSignals, mapPanelUser } from "@/lib/admin/user-stats";
-import { pickString } from "@/lib/formatters";
+import { pickString, spMonthStartIso } from "@/lib/formatters";
 import type { UserStats } from "@/types/admin";
 import type { UsageEventRow } from "@/types/database";
 
@@ -59,14 +60,16 @@ export async function fetchUserDetail(db: SupabaseClient, userId: string) {
         .eq(column, userId)
         .order("created_at", { ascending: false });
 
-  const [events, savedNews, submittedNews, generations] = await Promise.all([
-    safeSelect(db, "usage_events", "*", errors, byUser("user_id"), 2000) as Promise<
-      UsageEventRow[]
-    >,
-    safeSelect(db, "saved_news", "*", errors, byUser("user_id"), 2000),
-    safeSelect(db, "news_reviews", "*", errors, byUser("created_by"), 500),
-    safeSelect(db, "content_generations", "*", errors, byUser("user_id"), 1000),
-  ]);
+  const [events, savedNews, submittedNews, generations, aiLogRows] =
+    await Promise.all([
+      safeSelect(db, "usage_events", "*", errors, byUser("user_id"), 2000) as Promise<
+        UsageEventRow[]
+      >,
+      safeSelect(db, "saved_news", "*", errors, byUser("user_id"), 2000),
+      safeSelect(db, "news_reviews", "*", errors, byUser("created_by"), 500),
+      safeSelect(db, "content_generations", "*", errors, byUser("user_id"), 1000),
+      safeSelect(db, "ai_logs", "*", errors, byUser("user_id"), 2000),
+    ]);
 
   const stats: UserStats = {
     userId,
@@ -153,6 +156,25 @@ export async function fetchUserDetail(db: SupabaseClient, userId: string) {
 
   const timeline = events.slice(0, 100);
 
+  // Custo e uso de IA atribuído ao usuário via ai_logs.user_id
+  const aiItems = aiLogRows.map(mapAiLog);
+  const monthStart = spMonthStartIso();
+  const sumCost = (subset: typeof aiItems) =>
+    subset.reduce((total, i) => total + (i.costUsd ?? 0), 0);
+  const modelCounts = countBy(aiItems, (i) => i.model);
+  const aiCost = {
+    totalUsd: sumCost(aiItems),
+    monthUsd: sumCost(aiItems.filter((i) => (i.createdAt ?? "") >= monthStart)),
+    calls: aiItems.length,
+    errors: aiItems.filter((i) => i.error || /error|fail/i.test(i.status)).length,
+    byFeature: countBy(aiItems, (i) => i.feature).map((bucket) => ({
+      ...bucket,
+      costUsd: sumCost(aiItems.filter((i) => i.feature === bucket.name)),
+    })),
+    topModel: modelCounts[0]?.name ?? null,
+    lastCall: aiItems[0]?.createdAt ?? null,
+  };
+
   return {
     user,
     stats,
@@ -161,6 +183,7 @@ export async function fetchUserDetail(db: SupabaseClient, userId: string) {
     consumption,
     e2a,
     studio,
+    aiCost,
     timeline,
     errors,
   };

@@ -44,6 +44,10 @@ const routes = [
   "/users/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
   "/news",
   "/duplicates",
+  "/production",
+  "/production/queue",
+  "/production/daily",
+  "/production/costs",
   "/usage",
   "/ai-logs",
   "/cron",
@@ -69,6 +73,27 @@ const after = (await page.textContent("body")) ?? "";
 const actionOk = after.includes("criado em tags") && !after.includes("Application error");
 if (!actionOk) failures++;
 console.log(`${actionOk ? "PASS" : "FAIL"} | server action criar tag`);
+
+// export CSV dos ai-logs (route handler com guard próprio)
+const csvResp = await page.request.get(`${BASE}/ai-logs/export`);
+const csvOk =
+  csvResp.status() === 200 &&
+  (csvResp.headers()["content-type"] ?? "").includes("text/csv");
+if (!csvOk) failures++;
+console.log(`${csvOk ? "PASS" : "FAIL"} | export CSV ai-logs (${csvResp.status()})`);
+
+// produção sem SITE_INTERNAL_API_SECRET → botões desabilitados + aviso honesto
+await page.goto(`${BASE}/production`, { waitUntil: "networkidle" });
+const prodText = (await page.textContent("body")) ?? "";
+const honest = prodText.includes("Endpoint do SITE ainda não configurado");
+const disabledButtons = await page
+  .locator('button[type="submit"][disabled]')
+  .count();
+const prodOk = honest || disabledButtons >= 4 || process.env.SITE_INTERNAL_API_SECRET;
+if (!prodOk) failures++;
+console.log(
+  `${prodOk ? "PASS" : "FAIL"} | produção sem secret mostra estado honesto (${disabledButtons} botões desabilitados)`,
+);
 
 // fluxo de esqueci-minha-senha (páginas públicas)
 const ctx2 = await browser.newContext();

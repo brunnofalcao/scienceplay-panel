@@ -82,6 +82,33 @@ export function truncate(value: string, max = 90): string {
   return value.length > max ? `${value.slice(0, max - 1)}…` : value;
 }
 
+// ---- Janelas de tempo SEMPRE em horário de Brasília (America/Sao_Paulo) ----
+
+const SP_TZ = "America/Sao_Paulo";
+
+function spDateParts(date = new Date()): { y: string; m: string; d: string } {
+  const formatted = new Intl.DateTimeFormat("en-CA", {
+    timeZone: SP_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+  const [y, m, d] = formatted.split("-");
+  return { y, m, d };
+}
+
+/** Início do dia atual em Brasília (ISO com offset -03:00). */
+export function spDayStartIso(): string {
+  const { y, m, d } = spDateParts();
+  return `${y}-${m}-${d}T00:00:00-03:00`;
+}
+
+/** Início do mês atual em Brasília (ISO com offset -03:00). */
+export function spMonthStartIso(): string {
+  const { y, m } = spDateParts();
+  return `${y}-${m}-01T00:00:00-03:00`;
+}
+
 export function slugify(value: string): string {
   return value
     .normalize("NFD")
