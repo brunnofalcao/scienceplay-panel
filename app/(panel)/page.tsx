@@ -7,6 +7,8 @@ import { getPanelDb } from "@/lib/db/panel";
 import { formatNumber, formatUsd } from "@/lib/formatters";
 import { BarList } from "@/components/charts/BarList";
 import { Card, StatCard } from "@/components/ui/Card";
+import { AttentionRow } from "@/components/ui/AttentionRow";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 import { NotConfigured, ServiceRoleMissing } from "@/components/ui/NotConfigured";
 import { QueryDegradation } from "@/components/ui/QueryDegradation";
 
@@ -25,15 +27,46 @@ export default async function DashboardPage() {
   const limitsTotal =
     data.usage.limitsHit.news + data.usage.limitsHit.e2a + data.usage.limitsHit.studio;
 
+  const attention = [
+    {
+      label: "NEWS aguardando revisão",
+      count: data.news.needsReview,
+      href: "/production/queue",
+      cta: "Revisar",
+      tone: "warn" as const,
+    },
+    {
+      label: "Possíveis duplicados na fila",
+      count: data.news.possibleDuplicates,
+      href: "/duplicates",
+      cta: "Resolver",
+      tone: "warn" as const,
+    },
+    {
+      label: "Erros de IA (amostra)",
+      count: costs.totals.errors,
+      href: "/ai-logs?errors=true",
+      cta: "Investigar",
+      tone: "danger" as const,
+    },
+  ];
+
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Command Center</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">Command Center</h1>
+          <p className="text-sm text-muted">
+            O que aconteceu, o que importa e o que precisa de ação.
+          </p>
+        </div>
         {!panel.serviceRole ? <ServiceRoleMissing /> : null}
       </div>
       <QueryDegradation errors={data.errors} />
 
-      <h2 className="pt-2 text-xs uppercase tracking-widest text-muted">Usuários</h2>
+      <AttentionRow items={attention} />
+
+      <SectionHeader>Usuários</SectionHeader>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="Total de usuários" value={formatNumber(data.users.total)} />
         <StatCard label="Novos (7d)" value={formatNumber(data.users.new7d)} tone="ok" />
@@ -45,9 +78,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <h2 className="pt-2 text-xs uppercase tracking-widest text-muted">
-        Content Factory
-      </h2>
+      <SectionHeader>Content Factory</SectionHeader>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="NEWS geradas hoje" value={formatNumber(production.today)} />
         <StatCard label="NEWS geradas no mês" value={formatNumber(production.month)} />
@@ -106,7 +137,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      <h2 className="pt-2 text-xs uppercase tracking-widest text-muted">Editorial</h2>
+      <SectionHeader>Editorial</SectionHeader>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="NEWS publicadas" value={formatNumber(data.news.published)} tone="ok" />
         <StatCard label="NEWS geradas" value={formatNumber(data.news.generated)} />
@@ -123,9 +154,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <h2 className="pt-2 text-xs uppercase tracking-widest text-muted">
-        Origem do conteúdo
-      </h2>
+      <SectionHeader>Origem do conteúdo</SectionHeader>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard
           label="Enviados por usuários"
@@ -139,9 +168,7 @@ export default async function DashboardPage() {
         <StatCard label="Posts legados" value={formatNumber(data.legacyTotal)} />
       </div>
 
-      <h2 className="pt-2 text-xs uppercase tracking-widest text-muted">
-        Produto &amp; IA
-      </h2>
+      <SectionHeader>Produto &amp; IA</SectionHeader>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard
           label="E2A usados"

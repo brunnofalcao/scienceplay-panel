@@ -19,7 +19,13 @@ export default async function PanelLayout({
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Header profile={guard.profile} />
-        <main className="flex-1 space-y-4 overflow-x-auto p-6">{children}</main>
+        {/* Largura de leitura confortável — o conteúdo respira, não sprawla
+            de ponta a ponta em telas largas (percepção premium). */}
+        <main className="flex-1 overflow-x-auto px-6 py-7 md:px-10">
+          <div className="mx-auto w-full max-w-[1400px] space-y-6">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
