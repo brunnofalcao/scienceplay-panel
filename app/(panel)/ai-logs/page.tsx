@@ -59,11 +59,17 @@ export default async function AiLogsPage({
           label="Erros"
           value={formatNumber(totals.errors)}
           tone={totals.errors > 0 ? "danger" : "ok"}
+          hint={
+            totals.needsReview > 0
+              ? `${formatNumber(totals.needsReview)} em revisão (não é erro duro)`
+              : "falha total da chamada"
+          }
         />
         <StatCard
           label="Failovers"
           value={formatNumber(totals.fallbacks)}
           tone={totals.fallbacks > 0 ? "warn" : "default"}
+          hint="secundário assumiu — OK"
         />
         <StatCard label="Custo estimado" value={formatUsd(totals.costUsd)} />
       </div>

@@ -237,7 +237,9 @@ export async function getDashboardData(db: Db): Promise<DashboardData> {
   let aiCost = 0;
   for (const row of aiRows) {
     const status = pickString(row, ["status"]) ?? "";
-    if (/error|fail/i.test(status) || pickString(row, ["error", "error_message"])) {
+    // Erro DURO só: "failover" é sucesso (secundário entregou) e "needs_review"
+    // é conteúdo p/ revisão (surge na fila) — nenhum é erro de IA.
+    if (status === "error") {
       aiErrors += 1;
     }
     if (
@@ -970,13 +972,15 @@ export async function fetchAiLogs(db: Db, filters: AiLogFilters) {
       i.feature.toLowerCase().includes(filters.feature!.toLowerCase()),
     );
   }
-  if (filters.errorsOnly) items = items.filter((i) => i.error || /error|fail/i.test(i.status));
-  if (filters.fallbackOnly) items = items.filter((i) => i.fallback);
+  if (filters.errorsOnly) items = items.filter((i) => i.error || i.status === "error");
+  if (filters.fallbackOnly) items = items.filter((i) => i.fallback || i.status === "failover");
 
   const totals = {
+    // Erro DURO só (status "error"). "failover" é sucesso; "needs_review" é revisão.
     calls: items.length,
-    errors: items.filter((i) => i.error || /error|fail/i.test(i.status)).length,
-    fallbacks: items.filter((i) => i.fallback).length,
+    errors: items.filter((i) => i.status === "error").length,
+    needsReview: items.filter((i) => i.status === "needs_review").length,
+    fallbacks: items.filter((i) => i.fallback || i.status === "failover").length,
     costUsd: items.reduce((sum, i) => sum + (i.costUsd ?? 0), 0),
   };
 

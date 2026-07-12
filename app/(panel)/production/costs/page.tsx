@@ -86,11 +86,17 @@ export default async function ProductionCostsPage({
           label="Erros de IA"
           value={formatNumber(costs.totals.errors)}
           tone={costs.totals.errors > 0 ? "danger" : "ok"}
+          hint={
+            costs.totals.needsReview > 0
+              ? `${formatNumber(costs.totals.needsReview)} em revisão (não é erro duro)`
+              : "falha total da chamada"
+          }
         />
         <StatCard
           label="Failovers"
           value={formatNumber(costs.totals.fallbacks)}
           tone={costs.totals.fallbacks > 0 ? "warn" : "default"}
+          hint="secundário assumiu — geração OK"
         />
         <StatCard
           label="Custo E2A"

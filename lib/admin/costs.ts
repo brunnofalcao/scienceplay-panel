@@ -53,6 +53,7 @@ export interface CostAnalytics {
     costSample: number;
     calls: number;
     errors: number;
+    needsReview: number;
     fallbacks: number;
     avgCostPerCall: number;
     avgLatencyMs: number | null;
@@ -156,7 +157,7 @@ export async function fetchCostAnalytics(
       contains(r.model, filters.model) &&
       contains(r.status, filters.status) &&
       contains(r.plan, filters.plan) &&
-      (!filters.errorsOnly || Boolean(r.error) || /error|fail/i.test(r.status)),
+      (!filters.errorsOnly || Boolean(r.error) || r.status === "error"),
   );
 
   const dayStart = spDayStartIso();
@@ -207,8 +208,12 @@ export async function fetchCostAnalytics(
       costMonth: cost(rows.filter((r) => (r.createdAt ?? "") >= monthStart)),
       costSample: cost(rows),
       calls: rows.length,
-      errors: rows.filter((r) => r.error || /error|fail/i.test(r.status)).length,
-      fallbacks: rows.filter((r) => r.fallback).length,
+      // Erro DURO = a chamada falhou de vez (status "error"). "failover" é
+      // SUCESSO (o secundário entregou) e "needs_review" é conteúdo sinalizado
+      // para revisão (surge na fila editorial) — nenhum dos dois é erro de IA.
+      errors: rows.filter((r) => r.status === "error").length,
+      needsReview: rows.filter((r) => r.status === "needs_review").length,
+      fallbacks: rows.filter((r) => r.fallback || r.status === "failover").length,
       avgCostPerCall: rows.length ? cost(rows) / rows.length : 0,
       avgLatencyMs: latencies.length
         ? latencies.reduce((a, b) => a + b, 0) / latencies.length
