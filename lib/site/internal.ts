@@ -116,7 +116,10 @@ export async function callSiteInternal(
       };
     }
 
-    const body = (await response.text()).slice(0, 300);
+    // NÃO fatiar curto: a resposta do SITE traz o resumo do portão de grau em
+    // JSON (aceitas/descartadas/janela/mensagem) que o painel renderiza como
+    // painel de resultado. Cap generoso só para não estourar em respostas gigantes.
+    const body = (await response.text()).slice(0, 12000);
     if (!response.ok) {
       return {
         ok: false,

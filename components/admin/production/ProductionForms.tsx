@@ -230,7 +230,7 @@ export function ThemeForm({ ready }: { ready: boolean }) {
           </select>
         </Field>
         <Field label="Janela">
-          <select name="window" defaultValue="90d" disabled={!ready} className={selectClass}>
+          <select name="window" defaultValue="1y" disabled={!ready} className={selectClass}>
             {WINDOWS.map(([v, l]) => (
               <option key={v} value={v}>{l}</option>
             ))}
@@ -242,14 +242,25 @@ export function ThemeForm({ ready }: { ready: boolean }) {
         <Field label="Área (opcional)">
           <input name="area" disabled={!ready} className={inputClass} />
         </Field>
-        <Field label="Grau mínimo">
-          <select name="minGrade" defaultValue="any" disabled={!ready} className={selectClass}>
-            <option value="any">Qualquer</option>
-            {["A", "B", "C", "D"].map((g) => (
-              <option key={g} value={g}>{g}</option>
-            ))}
+        <Field label="Modo de evidência (grau mínimo)">
+          <select name="minGrade" defaultValue="A" disabled={!ready} className={selectClass}>
+            <option value="A">Evidência forte — só A (revisões, meta-análises, guidelines)</option>
+            <option value="B">Alta/moderada — A ou B (+ ensaios randomizados)</option>
+            <option value="C">Exploratório — A, B ou C (+ observacional; C não autopublica)</option>
+            <option value="D">Qualquer desenho — A a D</option>
+            <option value="any">Sem porta de corte (fila editorial)</option>
           </select>
         </Field>
+        <div className="sm:col-span-2 -mt-1">
+          <p className="rounded-lg border border-line bg-panel-2/50 px-3 py-2 text-xs leading-relaxed text-muted">
+            <span className="font-medium text-ink">Grau é porta de corte, não preferência.</span>{" "}
+            Escolhendo A, o motor busca só evidência forte, amplia a janela
+            automaticamente (até 5 anos) e <span className="text-ink">descarta</span> o
+            que sair abaixo de A — nunca completa a cota nem publica B/C no lugar. Se
+            não achar A suficiente, avisa em vez de baixar a régua.{" "}
+            <span className="text-faint">Você não precisa digitar sintaxe do PubMed.</span>
+          </p>
+        </div>
         <div className="flex items-end">
           <button type="submit" disabled={!ready || pending} className={buttonClass}>
             {pending ? "Gerando…" : "Gerar por tema"}

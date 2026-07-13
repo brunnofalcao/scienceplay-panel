@@ -224,28 +224,46 @@ function TourOverlay({
         <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       )}
 
+      {/* Card com cor OPOSTA à tela (bg=ink, texto=bg) + borda accent forte que
+          conecta ao holofote — em tela escura abre claro e vice-versa. */}
       <div
-        style={cardStyle}
-        className="z-50 rounded-2xl border border-line-strong bg-panel p-4 shadow-2xl"
+        style={{
+          ...cardStyle,
+          background: "var(--sp-ink)",
+          color: "var(--sp-bg)",
+          border: "2px solid var(--sp-accent)",
+        }}
+        className="z-50 rounded-2xl p-4 shadow-2xl"
       >
         <div className="mb-1 flex items-center justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-widest text-accent">
+          <span
+            className="text-[11px] font-semibold uppercase tracking-widest"
+            style={{ color: "var(--sp-brand)" }}
+          >
             {step.group}
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md px-1.5 text-sm text-muted hover:text-ink"
+            className="rounded-md px-1.5 text-sm opacity-50 hover:opacity-100"
             aria-label="Fechar tour"
           >
             ✕
           </button>
         </div>
-        <h3 className="font-display text-base font-semibold text-ink">{step.title}</h3>
-        <p className="mt-1 text-sm leading-relaxed text-muted">{step.what}</p>
+        <h3 className="font-display text-base font-semibold">{step.title}</h3>
+        <p
+          className="mt-1 text-sm leading-relaxed"
+          style={{ color: "color-mix(in oklab, var(--sp-bg) 70%, transparent)" }}
+        >
+          {step.what}
+        </p>
 
         <div className="mt-4 flex items-center justify-between gap-2">
-          <span className="text-xs tabular-nums text-faint">
+          <span
+            className="text-xs tabular-nums"
+            style={{ color: "color-mix(in oklab, var(--sp-bg) 50%, transparent)" }}
+          >
             {index + 1} / {total}
           </span>
           <div className="flex items-center gap-1.5">
@@ -253,7 +271,11 @@ function TourOverlay({
               type="button"
               onClick={onPrev}
               disabled={index === 0}
-              className="rounded-lg border border-line px-3 py-1.5 text-xs text-muted hover:border-line-strong hover:text-ink disabled:opacity-40"
+              className="rounded-lg px-3 py-1.5 text-xs font-medium hover:opacity-100 disabled:opacity-30"
+              style={{
+                border: "1px solid color-mix(in oklab, var(--sp-bg) 25%, transparent)",
+                opacity: 0.75,
+              }}
             >
               Voltar
             </button>
